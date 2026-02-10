@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Аэродруг — чат</title>
+  <title>Aerofriend Chat</title>
 
   <style>
     :root{
@@ -12,7 +12,7 @@
       --bgBot:#062a55;
 
       --text:#fff;
-      --muted:rgba(255,255,255,.70);
+      --muted:rgba(255,255,255,.72);
 
       --bubble-bot: rgba(255,255,255,.14);
       --bubble-user:#f28a2a;
@@ -28,6 +28,8 @@
       --overlay: rgba(0,0,0,.38);
       --panel: rgba(7, 40, 80, .92);
       --panel-stroke: rgba(255,255,255,.14);
+
+      --drawer: rgba(7, 32, 66, .96);
 
       --radius:18px;
 
@@ -59,6 +61,8 @@
       border-bottom: 1px solid rgba(255,255,255,.10);
       background: linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,0));
       backdrop-filter: blur(6px);
+      position:relative;
+      z-index:2;
     }
 
     .icon-btn{
@@ -74,7 +78,6 @@
     }
     .icon-btn img{ width:22px;height:22px; object-fit:contain; display:block; }
 
-    .brand{ display:flex; align-items:center; }
     .brand img{ height:22px; width:auto; display:block; }
 
     .titlebar{ padding: 10px 20px 6px; }
@@ -99,7 +102,7 @@
       flex:1;
       min-height:0;
       overflow:auto;
-      padding: 8px 0 14px;
+      padding: 8px 0 10px;
       -webkit-overflow-scrolling: touch;
       scroll-behavior:smooth;
     }
@@ -115,16 +118,11 @@
       border: 1px dashed rgba(255,255,255,.18);
       border-radius: 16px;
       background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.75);
+      color: rgba(255,255,255,.78);
       line-height: 1.35;
     }
 
-    .msg{
-      margin: 18px 0;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
+    .msg{ margin: 18px 0; display:flex; flex-direction:column; gap:6px; }
     .msg.bot{ align-items:flex-start; }
     .msg.user{ align-items:flex-end; }
 
@@ -148,17 +146,8 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-
-    .bot .bubble{
-      background: var(--bubble-bot);
-      border-bottom-left-radius: 10px;
-    }
-
-    .user .bubble{
-      background: var(--bubble-user);
-      border-color: rgba(255,255,255,.08);
-      border-bottom-right-radius: 10px;
-    }
+    .bot .bubble{ background: var(--bubble-bot); border-bottom-left-radius: 10px; }
+    .user .bubble{ background: var(--bubble-user); border-color: rgba(255,255,255,.08); border-bottom-right-radius: 10px; }
 
     .chips{
       display:flex;
@@ -180,6 +169,35 @@
     }
     .chip:active{ transform: translateY(1px); }
 
+    /* ===== quickbar ===== */
+    .quickbar{
+      display:flex;
+      gap:12px;
+      padding: 2px 0 10px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .pill{
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.12);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+      user-select:none;
+    }
+    .pill strong{ font-weight:900; }
+    .pill:active{ transform: translateY(1px); }
+    .pill.orange{ background: var(--bubble-user); border-color: rgba(255,255,255,.12); color:#fff; font-weight:900; }
+    .pill.voice-on{ outline: 2px solid rgba(242,138,42,.55); }
+
+    /* ===== composer ===== */
     .composer{
       height: calc(var(--composer-h) + var(--safe-bottom));
       padding: 12px 16px calc(12px + var(--safe-bottom));
@@ -187,9 +205,8 @@
       align-items:center;
       gap:12px;
       position:relative;
-      z-index:3;
+      z-index:1;
     }
-
     .plus{
       width:54px;height:54px;
       border-radius: 16px;
@@ -230,7 +247,7 @@
     }
     .send img{ width:22px;height:22px; display:block; }
 
-    /* ===== Quick Actions Popup ===== */
+    /* ===== popup ===== */
     .overlay{
       position:absolute;
       inset:0;
@@ -292,13 +309,7 @@
       place-items:center;
     }
 
-    .actions{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
-      margin-top: 10px;
-    }
-
+    .actions{ display:grid; grid-template-columns: 1fr; gap:12px; margin-top: 10px; }
     .action-card{
       width:100%;
       text-align:left;
@@ -313,43 +324,130 @@
       color:#fff;
     }
     .action-card:active{ transform: translateY(1px); }
+    .action-main{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .action-name{ font-weight: 900; font-size: 22px; line-height: 1.1; color:#fff; }
+    .action-desc{ font-size: 18px; color: rgba(255,255,255,.78); line-height: 1.2; }
 
-    .action-main{
+    /* ===== Drawer ===== */
+    .drawerOverlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.42);
+      backdrop-filter: blur(4px);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      z-index:30;
+    }
+    .drawerOverlay.open{ opacity:1; pointer-events:auto; }
+
+    .drawer{
+      position:absolute;
+      top:0; left:0;
+      height:100%;
+      width:min(360px, 86vw);
+      padding: calc(18px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+      background: var(--drawer);
+      border-right: 1px solid rgba(255,255,255,.12);
+      box-shadow: 18px 0 40px rgba(0,0,0,.30);
+      transform: translateX(-10px);
+      opacity:0;
+      transition: transform .18s ease, opacity .18s ease;
       display:flex;
       flex-direction:column;
-      gap:6px;
-      min-width:0;
+      gap:14px;
     }
-    .action-name{
-      font-weight: 900;
-      font-size: 22px;
-      line-height: 1.1;
-      color:#fff;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .action-desc{
-      font-size: 18px;
-      color: rgba(255,255,255,.78);
-      line-height: 1.2;
+    .drawerOverlay.open .drawer{
+      transform: translateX(0);
+      opacity:1;
     }
 
-    .crew-btn{
-      margin-top: 14px;
-      width:100%;
-      border:none;
-      border-radius: 22px;
-      background: var(--bubble-user);
-      color:#fff;
+    .drawerTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .drawerTitle{
+      font-size: 20px;
       font-weight: 900;
       letter-spacing:.2px;
-      padding: 18px 14px;
-      cursor:pointer;
-      box-shadow: 0 14px 28px rgba(0,0,0,.22);
-      font-size: 22px;
     }
-    .crew-btn:active{ transform: translateY(1px); }
+    .drawerClose{
+      width:44px;height:44px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color:#fff;
+      font-size: 28px;
+      line-height: 1;
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding-top: 6px;
+    }
+    .navItem{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 14px 14px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:#fff;
+      user-select:none;
+    }
+    .navItem.active{
+      background: rgba(242,138,42,.20);
+      border-color: rgba(242,138,42,.40);
+    }
+    .navItem .name{
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .navItem .sub{
+      font-size: 13px;
+      color: rgba(255,255,255,.70);
+      margin-top: 3px;
+    }
+
+    .drawerFooter{
+      margin-top:auto;
+      border-top: 1px solid rgba(255,255,255,.10);
+      padding-top: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .langRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .langBtn{
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color:#fff;
+      border-radius: 999px;
+      padding: 10px 12px;
+      cursor:pointer;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .langBtn.active{
+      background: rgba(242,138,42,.22);
+      border-color: rgba(242,138,42,.42);
+    }
 
     @media (min-width: 820px) and (orientation: landscape){
       .app{ align-items:center; }
@@ -358,22 +456,13 @@
       .titlebar h1{ font-size: 44px; }
       .sheet{ left: 0; right: 0; }
     }
-
-    @media (max-width: 360px){
-      .titlebar h1{ font-size: 36px; }
-      .bubble{ font-size: 15px; }
-      .sheet-title h2{ font-size: 22px; }
-      .sheet-title p, .action-desc{ font-size: 15px; }
-      .action-name{ font-size: 18px; }
-      .crew-btn{ font-size: 18px; }
-    }
   </style>
 </head>
 
 <body>
   <div class="app">
     <header>
-      <button class="icon-btn" type="button" aria-label="Меню">
+      <button id="burger" class="icon-btn" type="button" aria-label="Menu">
         <img src="Icon/Burger-menu.svg" alt="" />
       </button>
 
@@ -383,101 +472,673 @@
     </header>
 
     <div class="titlebar">
-      <h1>Аэродруг</h1>
+      <h1 id="titleH1">Аэродруг</h1>
     </div>
 
     <main class="chat">
       <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
-        <div id="emptyHint" class="empty-hint">
-          Нажмите «+» для сценариев или задайте вопрос — я помогу по ходу полёта.
-        </div>
+        <div id="emptyHint" class="empty-hint"></div>
+      </div>
+
+      <div class="quickbar" aria-label="Quick actions">
+        <button id="crewBtnFixed" class="pill orange" type="button"></button>
+        <button id="voiceBtn" class="pill" type="button"></button>
       </div>
 
       <div id="overlay" class="overlay" aria-hidden="true">
-        <div class="sheet" role="dialog" aria-label="Что сделать в полёте">
+        <div class="sheet" role="dialog" aria-label="Quick scenarios">
           <div class="sheet-title">
             <div>
-              <h2>Что сделать в полёте</h2>
-              <p>Выберите сценарий — я задам пару вопросов и предложу вариант.</p>
+              <h2 id="sheetTitle">Что сделать в полёте</h2>
+              <p id="sheetSubtitle">Выберите сценарий — я задам пару вопросов и предложу вариант.</p>
             </div>
-            <button id="closeSheet" class="sheet-close" type="button" aria-label="Закрыть">×</button>
+            <button id="closeSheet" class="sheet-close" type="button" aria-label="Close">×</button>
           </div>
 
           <div class="actions">
             <button class="action-card" type="button" data-action="watch">
               <div class="action-main">
-                <div class="action-name">🎬 Подборка на этот рейс</div>
-                <div class="action-desc">Фильм или сериал под длительность полёта и вкус.</div>
+                <div class="action-name" id="actWatchName">🎬 Подборка на этот рейс</div>
+                <div class="action-desc" id="actWatchDesc">Фильм или сериал под длительность полёта и вкус.</div>
               </div>
             </button>
 
             <button class="action-card" type="button" data-action="sleep">
               <div class="action-main">
-                <div class="action-name">🌙 Мягко уснуть</div>
-                <div class="action-desc">Дыхание, расслабление и “выключение головы”.</div>
+                <div class="action-name" id="actSleepName">🌙 Мягко уснуть</div>
+                <div class="action-desc" id="actSleepDesc">Дыхание, расслабление и “выключение головы”.</div>
               </div>
             </button>
 
             <button class="action-card" type="button" data-action="flyover">
               <div class="action-main">
-                <div class="action-name">🗺️ Что мы пролетаем</div>
-                <div class="action-desc">Подскажу ориентиры по маршруту.</div>
+                <div class="action-name" id="actFlyName">🗺️ Маршрут и где мы</div>
+                <div class="action-desc" id="actFlyDesc">Города по маршруту и что под нами прямо сейчас.</div>
               </div>
             </button>
 
             <button class="action-card" type="button" data-action="aircraft">
               <div class="action-main">
-                <div class="action-name">✈️ Интересное о самолёте</div>
-                <div class="action-desc">Факты про полёт, высоту, скорость и системы.</div>
+                <div class="action-name" id="actAirName">✈️ Интересное о самолёте</div>
+                <div class="action-desc" id="actAirDesc">Факты про полёт, высоту, скорость и турбулентность.</div>
               </div>
             </button>
           </div>
-
-          <button id="crewBtn" class="crew-btn" type="button">
-            Связь с бортпроводником
-          </button>
         </div>
       </div>
 
       <div class="composer">
-        <button id="plus" class="plus" type="button" aria-label="Сценарии">
+        <button id="plus" class="plus" type="button" aria-label="Scenarios">
           <img src="Icon/Plus.svg" alt="" />
         </button>
 
-        <input id="input" class="input" type="text" placeholder="Спроси меня" autocomplete="off" />
+        <input id="input" class="input" type="text" autocomplete="off" />
 
-        <button id="send" class="send" type="button" aria-label="Отправить">
+        <button id="send" class="send" type="button" aria-label="Send">
           <img src="Icon/TextButton/arrow-up_20x20.svg" alt="" />
         </button>
       </div>
     </main>
   </div>
 
+  <!-- Drawer -->
+  <div id="drawerOverlay" class="drawerOverlay" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-label="Navigation">
+      <div class="drawerTop">
+        <div class="drawerTitle" id="drawerTitle">Навигация</div>
+        <button id="drawerClose" class="drawerClose" type="button" aria-label="Close">×</button>
+      </div>
+
+      <nav class="nav">
+        <div class="navItem active" data-page="aerofriend">
+          <div>
+            <div class="name" id="navAerofriend">Аэродруг</div>
+            <div class="sub" id="navAerofriendSub">Чат-помощник в полёте</div>
+          </div>
+        </div>
+
+        <div class="navItem" data-page="entertainment">
+          <div>
+            <div class="name" id="navEntertainment">Центр развлечений</div>
+            <div class="sub" id="navEntertainmentSub">Фильмы, музыка, игры</div>
+          </div>
+        </div>
+
+        <div class="navItem" data-page="map3d">
+          <div>
+            <div class="name" id="navMap3d">3D-карта</div>
+            <div class="sub" id="navMap3dSub">Маршрут в объёме</div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="drawerFooter">
+        <div id="langTitle" style="font-weight:900; letter-spacing:.2px;">Язык</div>
+        <div class="langRow">
+          <button class="langBtn" data-lang="ru">Русский</button>
+          <button class="langBtn" data-lang="en">English</button>
+          <button class="langBtn" data-lang="tr">Türkçe</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
   <script>
+    // =========================
+    // i18n
+    // =========================
+    const I18N = {
+      ru: {
+        appTitle: "Аэродруг",
+        emptyHint: "Нажмите «+» для сценариев или задайте вопрос — я помогу по ходу полёта.",
+        placeholder: "Спроси меня",
+        drawerTitle: "Навигация",
+        nav: {
+          aerofriend: { name: "Аэродруг", sub: "Чат-помощник в полёте" },
+          entertainment: { name: "Центр развлечений", sub: "Фильмы, музыка, игры" },
+          map3d: { name: "3D-карта", sub: "Маршрут в объёме" }
+        },
+        langTitle: "Язык",
+        sheetTitle: "Что сделать в полёте",
+        sheetSubtitle: "Выберите сценарий — я задам пару вопросов и предложу вариант.",
+        actions: {
+          watchName:"🎬 Подборка на этот рейс",
+          watchDesc:"Фильм или сериал под длительность полёта и вкус.",
+          sleepName:"🌙 Мягко уснуть",
+          sleepDesc:"Дыхание, расслабление и “выключение головы”.",
+          flyName:"🗺️ Маршрут и где мы",
+          flyDesc:"Города по маршруту и что под нами прямо сейчас.",
+          airName:"✈️ Интересное о самолёте",
+          airDesc:"Факты про полёт, высоту, скорость и турбулентность."
+        },
+        quick: {
+          crew: "Связь с бортпроводником",
+          voice: "🎙️ Поговорить",
+          voiceStop: "⏹️ Стоп запись"
+        },
+        errors: {
+          pickList: "Простите, не понял, что вы имели ввиду. Пожалуйста выберите из списка"
+        },
+        mainMenu: [
+          {label:"🎬 Подборка на рейс", value:"start:watch"},
+          {label:"🌙 Мягко уснуть", value:"start:sleep"},
+          {label:"🗺️ Маршрут и где мы", value:"start:flyover"},
+          {label:"✈️ Интересное о самолёте", value:"start:aircraft"},
+          {label:"Связь с бортпроводником", value:"start:crew"},
+        ],
+        smalltalk: {
+          hello: "Привет. Я Аэродруг. Нажмите “+” для сценариев или сформулируйте запрос.",
+          thanks: "Пожалуйста. Выберите сценарий или задайте вопрос."
+        },
+        watch: {
+          askDuration: "Подберу, что посмотреть. Сколько примерно лететь? Можно “2:30” или “150 минут”.",
+          askGenre: "Окей. Какой жанр берём?",
+          askFormat: "Формат: сериал или фильм?",
+          refineChips: [
+            {label:"Полегче", value:"watch:lighter"},
+            {label:"Пожёстче", value:"watch:harder"},
+            {label:"Сменить жанр", value:"watch:genre"}
+          ],
+          durationChips: [
+            {label:"До 1 часа", value:"~1h"},
+            {label:"1–2 часа", value:"~1-2h"},
+            {label:"2–4 часа", value:"~2-4h"},
+            {label:"Больше 4 часов", value:"~4+h"}
+          ],
+          genreChips: [
+            {label:"Комедия", value:"genre:comedy"},
+            {label:"Детектив/триллер", value:"genre:detective"},
+            {label:"Драма", value:"genre:drama"},
+            {label:"Фантастика", value:"genre:scifi"}
+          ],
+          formatChips: [
+            {label:"Сериал", value:"format:series"},
+            {label:"Фильм", value:"format:film"}
+          ],
+          bucketName: (b)=> b==="short"?"короткий":(b==="mid"?"средний":"длинный"),
+          picksLabel: (bucket)=>`Подборка (${bucket} слот):`
+        },
+        sleep: {
+          intro: "Сделаем спокойный “спуск” в сон. Сколько времени есть?",
+          chips: [
+            {label:"5 минут", value:"sleep:5"},
+            {label:"10 минут", value:"sleep:10"},
+            {label:"Просто советы", value:"sleep:tips"}
+          ],
+          tips: "Советы для сна:\n• Маска/беруши\n• Плед под поясницу\n• Вода небольшими глотками\n\nЕсли вы у окна/прохода — скажите, подскажу позу.",
+          five: "5 минут:\n1) Вдох 4 секунды\n2) Выдох 6 секунд\nПовторите 8 циклов.\n\nПродолжить ещё 2 минуты?",
+          fiveChips: [
+            {label:"Да, ещё 2", value:"sleep:more2"},
+            {label:"Нет, достаточно", value:"sleep:done"}
+          ],
+          more2: "Ещё 2 минуты:\nВдох 4 — выдох 8.\nЕсли сбились — спокойно начните заново.\n\nГотово.",
+          done: "Окей. Если мысли мешают — считайте выдохи от 1 до 20 и снова с 1.",
+          tenAsk: "10 минут: хотите “только тайминг” или “с подсказками”?",
+          tenChips: [
+            {label:"Только тайминг", value:"sleep:timing"},
+            {label:"С подсказками", value:"sleep:coach"}
+          ],
+          askStart: "Скажите “старт”. Я проведу по этапам короткими сообщениями.",
+          startNeed: "Напишите “старт”.",
+          start1: "Старт. 2 минуты: вдох 4 — выдох 6.",
+          start2: "Дальше. 3 минуты: расслабьте лоб → глаза → челюсть → плечи → руки.",
+          start3: "Финал. 5 минут: представьте “тихий коридор”, каждый шаг — выдох.",
+          startDone: "Готово."
+        },
+        fly: {
+          menu: "Могу показать список городов по маршруту или сказать, где мы сейчас.",
+          chips: [
+            {label:"Какие города пролетаем", value:"fly:list"},
+            {label:"Что мы пролетаем сейчас", value:"fly:now"}
+          ],
+          routeTitle:"Маршрут:",
+          nowChips: [
+            {label:"А где мы?", value:"fly:now"},
+            {label:"Какие города по маршруту", value:"fly:list"}
+          ],
+          listAfter: [
+            {label:"Что мы пролетаем сейчас", value:"fly:now"}
+          ],
+          weOver: (city)=>`Мы над ${city}.`
+        },
+        aircraft: {
+          intro:"Короткий факт: на крейсерском режиме лайнер обычно летит на высоте около 10–12 км.",
+          chips:[
+            {label:"Ещё факт", value:"air:more"},
+            {label:"Про скорость", value:"air:speed"},
+            {label:"Про турбулентность", value:"air:turb"}
+          ],
+          speed:"Крейсерская скорость у лайнеров обычно порядка 800–900 км/ч. Ветер может заметно менять скорость “по земле”.",
+          turb:"Если трясёт: ремень пристёгнут. Экипаж может менять эшелон и обходить зоны по погоде и докладам.",
+          facts:[
+            "В салоне поддерживается давление, чтобы было комфортно дышать на высоте.",
+            "Закрылки и предкрылки помогают летать на меньшей скорости при взлёте и посадке.",
+            "При посадке самолёт меняет конфигурацию крыла — поэтому слышны щелчки и усиливается шум воздуха."
+          ]
+        },
+        crew: {
+          ask:"Что передать бортпроводнику?",
+          options:[
+            {label:"Принесите воду", value:"crew:water"},
+            {label:"Нужна подушка", value:"crew:pillow"},
+            {label:"Закажите ужин", value:"crew:dinner"},
+            {label:"Принесите детское меню", value:"crew:kids"}
+          ],
+          accepted:(phrase)=>`Принято: «${phrase}». Хотите добавить что-то ещё?`,
+          after:[
+            {label:"Ещё запрос", value:"crew:more"},
+            {label:"Готово", value:"crew:done"}
+          ],
+          ok:"Хорошо."
+        },
+        voice: {
+          recording:"Записываю. Нажмите “Стоп”, чтобы отправить голосовое.",
+          gotVoice:"Принял голосовое. Для точного ответа напишите коротко текстом или выберите сценарий кнопкой “+”.",
+          noSupport:"Запись голосовых не поддерживается в этом браузере. Можно продолжить текстом.",
+          micFail:"Не удалось включить микрофон. Проверьте разрешения браузера."
+        }
+      },
+
+      en: {
+        appTitle: "Aerofriend",
+        emptyHint: "Tap “+” for scenarios or type a question — I’ll help during the flight.",
+        placeholder: "Ask me",
+        drawerTitle: "Navigation",
+        nav: {
+          aerofriend: { name: "Aerofriend", sub: "In-flight chat assistant" },
+          entertainment: { name: "Entertainment Center", sub: "Movies, music, games" },
+          map3d: { name: "3D Map", sub: "Route in 3D" }
+        },
+        langTitle: "Language",
+        sheetTitle: "What to do in flight",
+        sheetSubtitle: "Choose a scenario — I’ll ask a couple of questions and suggest an option.",
+        actions: {
+          watchName:"🎬 Something to watch",
+          watchDesc:"Movie/series based on flight time and taste.",
+          sleepName:"🌙 Fall asleep gently",
+          sleepDesc:"Breathing and relaxation to switch off.",
+          flyName:"🗺️ Route & where we are",
+          flyDesc:"Cities on the route and where we are right now.",
+          airName:"✈️ Aircraft facts",
+          airDesc:"Altitude, speed, turbulence — quick explanations."
+        },
+        quick: {
+          crew: "Contact cabin crew",
+          voice: "🎙️ Talk",
+          voiceStop: "⏹️ Stop recording"
+        },
+        errors: {
+          pickList: "Sorry, I didn’t understand. Please choose from the list."
+        },
+        mainMenu: [
+          {label:"🎬 Watch picks", value:"start:watch"},
+          {label:"🌙 Sleep help", value:"start:sleep"},
+          {label:"🗺️ Route & location", value:"start:flyover"},
+          {label:"✈️ Aircraft facts", value:"start:aircraft"},
+          {label:"Contact cabin crew", value:"start:crew"},
+        ],
+        smalltalk: {
+          hello: "Hi. I’m Aerofriend. Tap “+” for scenarios or tell me what you need.",
+          thanks: "You’re welcome. Pick a scenario or ask a question."
+        },
+        watch: {
+          askDuration: "I can recommend something to watch. How long is your flight? You can type “2:30” or “150 minutes”.",
+          askGenre: "Got it. Which genre?",
+          askFormat: "Format: series or movie?",
+          refineChips: [
+            {label:"Lighter", value:"watch:lighter"},
+            {label:"More intense", value:"watch:harder"},
+            {label:"Change genre", value:"watch:genre"}
+          ],
+          durationChips: [
+            {label:"Up to 1 hour", value:"~1h"},
+            {label:"1–2 hours", value:"~1-2h"},
+            {label:"2–4 hours", value:"~2-4h"},
+            {label:"4+ hours", value:"~4+h"}
+          ],
+          genreChips: [
+            {label:"Comedy", value:"genre:comedy"},
+            {label:"Mystery/Thriller", value:"genre:detective"},
+            {label:"Drama", value:"genre:drama"},
+            {label:"Sci-fi", value:"genre:scifi"}
+          ],
+          formatChips: [
+            {label:"Series", value:"format:series"},
+            {label:"Movie", value:"format:film"}
+          ],
+          bucketName: (b)=> b==="short"?"short":(b==="mid"?"mid":"long"),
+          picksLabel: (bucket)=>`Picks (${bucket} slot):`
+        },
+        sleep: {
+          intro: "Let’s help you fall asleep gently. How much time do you have?",
+          chips: [
+            {label:"5 minutes", value:"sleep:5"},
+            {label:"10 minutes", value:"sleep:10"},
+            {label:"Just tips", value:"sleep:tips"}
+          ],
+          tips: "Sleep tips:\n• Eye mask/earplugs\n• Support your lower back\n• Bag under feet\n• Small sips of water\n\nTell me aisle/window and I’ll suggest a position.",
+          five: "5 minutes:\n1) Inhale 4 seconds\n2) Exhale 6 seconds\nRepeat 8 cycles.\n\nContinue for 2 more minutes?",
+          fiveChips: [
+            {label:"Yes, +2", value:"sleep:more2"},
+            {label:"No, enough", value:"sleep:done"}
+          ],
+          more2: "2 more minutes:\nInhale 4 — exhale 8.\nIf you lose count — calmly restart.\n\nDone.",
+          done: "Okay. If thoughts keep coming — count exhales from 1 to 20 and restart.",
+          tenAsk: "10 minutes: “timing only” or “guided”?",
+          tenChips: [
+            {label:"Timing only", value:"sleep:timing"},
+            {label:"Guided", value:"sleep:coach"}
+          ],
+          askStart: "Say “start” and I’ll guide you in short steps.",
+          startNeed: "Type “start”.",
+          start1: "Start. 2 minutes: inhale 4 — exhale 6.",
+          start2: "Next. 3 minutes: relax forehead → eyes → jaw → shoulders → arms.",
+          start3: "Final. 5 minutes: imagine a quiet corridor, each step — an exhale.",
+          startDone: "Done."
+        },
+        fly: {
+          menu: "I can show the list of cities on the route or tell where we are right now.",
+          chips: [
+            {label:"Which cities do we overfly?", value:"fly:list"},
+            {label:"Where are we now?", value:"fly:now"}
+          ],
+          routeTitle:"Route:",
+          nowChips: [
+            {label:"Where are we?", value:"fly:now"},
+            {label:"Route cities", value:"fly:list"}
+          ],
+          listAfter: [
+            {label:"Where are we now?", value:"fly:now"}
+          ],
+          weOver: (city)=>`We’re over ${city}.`
+        },
+        aircraft: {
+          intro:"Quick fact: cruising altitude is usually around 10–12 km — efficient for fuel and weather.",
+          chips:[
+            {label:"More facts", value:"air:more"},
+            {label:"About speed", value:"air:speed"},
+            {label:"About turbulence", value:"air:turb"}
+          ],
+          speed:"Typical cruise speed is about 800–900 km/h. Winds can noticeably change ground speed.",
+          turb:"If it gets bumpy: keep your seatbelt fastened. Crew can change altitude/speed and avoid rough areas.",
+          facts:[
+            "Cabin pressure is maintained so breathing stays comfortable at altitude.",
+            "Flaps and slats help fly slower during takeoff and landing.",
+            "During landing the wing configuration changes — that’s why you hear clicks and more airflow noise."
+          ]
+        },
+        crew: {
+          ask:"What should I pass to the cabin crew?",
+          options:[
+            {label:"Please bring water", value:"crew:water"},
+            {label:"I need a pillow", value:"crew:pillow"},
+            {label:"Order dinner", value:"crew:dinner"},
+            {label:"Bring a kids menu", value:"crew:kids"}
+          ],
+          accepted:(phrase)=>`Received: “${phrase}”. Anything else?`,
+          after:[
+            {label:"One more request", value:"crew:more"},
+            {label:"Done", value:"crew:done"}
+          ],
+          ok:"Okay."
+        },
+        voice: {
+          recording:"Recording. Tap “Stop” to send a voice note.",
+          gotVoice:"Voice note received. For an exact reply, type a short message or use “+” scenarios.",
+          noSupport:"Voice recording isn’t supported in this browser. You can keep using text.",
+          micFail:"Couldn’t access the microphone. Check browser permissions."
+        }
+      },
+
+      tr: {
+        appTitle: "AeroArkadaş",
+        emptyHint: "Senaryolar için “+”a dokun ya da yaz — uçuş boyunca yardımcı olurum.",
+        placeholder: "Bana sor",
+        drawerTitle: "Gezinme",
+        nav: {
+          aerofriend: { name: "AeroArkadaş", sub: "Uçuş içi sohbet asistanı" },
+          entertainment: { name: "Eğlence Merkezi", sub: "Film, müzik, oyun" },
+          map3d: { name: "3D Harita", sub: "Rotayı 3D gör" }
+        },
+        langTitle: "Dil",
+        sheetTitle: "Uçuşta ne yapalım",
+        sheetSubtitle: "Bir senaryo seç — birkaç soru sorup seçenek önereceğim.",
+        actions: {
+          watchName:"🎬 İzlenecek öneri",
+          watchDesc:"Uçuş süresi ve zevke göre film/dizi.",
+          sleepName:"🌙 Nazikçe uyku",
+          sleepDesc:"Nefes ve gevşeme ile sakinleş.",
+          flyName:"🗺️ Rota & konum",
+          flyDesc:"Rota şehirleri ve şu an neredeyiz.",
+          airName:"✈️ Uçak bilgileri",
+          airDesc:"İrtifa, hız, türbülans — kısa açıklamalar."
+        },
+        quick: {
+          crew: "Kabin ekibi ile iletişim",
+          voice: "🎙️ Konuş",
+          voiceStop: "⏹️ Kaydı durdur"
+        },
+        errors: {
+          pickList: "Üzgünüm, anlayamadım. Lütfen listeden seçin."
+        },
+        mainMenu: [
+          {label:"🎬 İzleme önerileri", value:"start:watch"},
+          {label:"🌙 Uyku desteği", value:"start:sleep"},
+          {label:"🗺️ Rota & konum", value:"start:flyover"},
+          {label:"✈️ Uçak bilgileri", value:"start:aircraft"},
+          {label:"Kabin ekibi", value:"start:crew"},
+        ],
+        smalltalk: {
+          hello: "Merhaba. Ben AeroArkadaş. Senaryolar için “+”a dokun ya da isteğini söyle.",
+          thanks: "Rica ederim. Bir senaryo seç veya soru sor."
+        },
+        watch: {
+          askDuration: "İzlenecek bir şey önerebilirim. Uçuş süresi ne kadar? “2:30” ya da “150 dakika” yazabilirsin.",
+          askGenre: "Tamam. Hangi tür?",
+          askFormat: "Format: dizi mi film mi?",
+          refineChips: [
+            {label:"Daha hafif", value:"watch:lighter"},
+            {label:"Daha sert", value:"watch:harder"},
+            {label:"Tür değiştir", value:"watch:genre"}
+          ],
+          durationChips: [
+            {label:"1 saate kadar", value:"~1h"},
+            {label:"1–2 saat", value:"~1-2h"},
+            {label:"2–4 saat", value:"~2-4h"},
+            {label:"4+ saat", value:"~4+h"}
+          ],
+          genreChips: [
+            {label:"Komedi", value:"genre:comedy"},
+            {label:"Gizem/gerilim", value:"genre:detective"},
+            {label:"Dram", value:"genre:drama"},
+            {label:"Bilim kurgu", value:"genre:scifi"}
+          ],
+          formatChips: [
+            {label:"Dizi", value:"format:series"},
+            {label:"Film", value:"format:film"}
+          ],
+          bucketName: (b)=> b==="short"?"kısa":(b==="mid"?"orta":"uzun"),
+          picksLabel: (bucket)=>`Öneriler (${bucket}):`
+        },
+        sleep: {
+          intro: "Uyumana nazikçe yardım edelim. Ne kadar vaktin var?",
+          chips: [
+            {label:"5 dakika", value:"sleep:5"},
+            {label:"10 dakika", value:"sleep:10"},
+            {label:"Sadece ipuçları", value:"sleep:tips"}
+          ],
+          tips: "Uyku ipuçları:\n• Göz bandı/kulak tıkacı\n• Bel desteği\n• Ayak altına çanta\n• Az yudum su\n\nKoltuk (koridor/pencere) söyle, poz öneririm.",
+          five: "5 dakika:\n1) 4 sn nefes al\n2) 6 sn nefes ver\n8 döngü tekrar.\n\n2 dakika daha devam?",
+          fiveChips: [
+            {label:"Evet, +2", value:"sleep:more2"},
+            {label:"Hayır, yeter", value:"sleep:done"}
+          ],
+          more2: "2 dakika daha:\n4 sn al — 8 sn ver.\nSayım bozulursa sakinçe başa dön.\n\nBitti.",
+          done: "Tamam. Düşünceler gelirse, nefes verişlerini 1’den 20’ye say ve tekrar başla.",
+          tenAsk: "10 dakika: “sadece süre” mi “rehberli” mi?",
+          tenChips: [
+            {label:"Sadece süre", value:"sleep:timing"},
+            {label:"Rehberli", value:"sleep:coach"}
+          ],
+          askStart: "“start” yaz, kısa adımlarla yönlendireyim.",
+          startNeed: "“start” yaz.",
+          start1: "Start. 2 dakika: 4 sn al — 6 sn ver.",
+          start2: "Sonra. 3 dakika: alın → göz → çene → omuz → kolları gevşet.",
+          start3: "Final. 5 dakika: sessiz bir koridor hayal et, her adım — nefes veriş.",
+          startDone: "Bitti."
+        },
+        fly: {
+          menu: "Rota şehirlerini listeleyebilirim ya da şu an nerede olduğumuzu söyleyebilirim.",
+          chips: [
+            {label:"Hangi şehirlerin üstünden geçiyoruz?", value:"fly:list"},
+            {label:"Şu an neredeyiz?", value:"fly:now"}
+          ],
+          routeTitle:"Rota:",
+          nowChips: [
+            {label:"Neredeyiz?", value:"fly:now"},
+            {label:"Rota şehirleri", value:"fly:list"}
+          ],
+          listAfter: [
+            {label:"Şu an neredeyiz?", value:"fly:now"}
+          ],
+          weOver: (city)=>`${city} üzerindeyiz.`
+        },
+        aircraft: {
+          intro:"Kısa bilgi: seyir irtifası genelde 10–12 km civarıdır — yakıt ve hava için verimlidir.",
+          chips:[
+            {label:"Daha fazla", value:"air:more"},
+            {label:"Hız", value:"air:speed"},
+            {label:"Türbülans", value:"air:turb"}
+          ],
+          speed:"Tipik seyir hızı 800–900 km/s. Rüzgâr, yere göre hızı ciddi etkileyebilir.",
+          turb:"Sarsıntıda kemer bağlı olsun. Ekip irtifa/hız değiştirerek pürüzlü bölgeleri aşabilir.",
+          facts:[
+            "Kabin basıncı, yüksekte rahat nefes almak için ayarlanır.",
+            "Flap/slat, kalkış ve inişte daha yavaş uçmayı sağlar.",
+            "İnişte kanat konfigürasyonu değişir — bu yüzden tıkırtılar ve hava sesi artar."
+          ]
+        },
+        crew: {
+          ask:"Kabin ekibine ne ileteyim?",
+          options:[
+            {label:"Su getirir misiniz", value:"crew:water"},
+            {label:"Yastık istiyorum", value:"crew:pillow"},
+            {label:"Akşam yemeği siparişi", value:"crew:dinner"},
+            {label:"Çocuk menüsü", value:"crew:kids"}
+          ],
+          accepted:(phrase)=>`Alındı: “${phrase}”. Başka bir isteğin var mı?`,
+          after:[
+            {label:"Bir istek daha", value:"crew:more"},
+            {label:"Bitti", value:"crew:done"}
+          ],
+          ok:"Tamam."
+        },
+        voice: {
+          recording:"Kayıt alıyorum. Sesli mesaj göndermek için “Durdur”a bas.",
+          gotVoice:"Sesli mesaj alındı. Kesin yanıt için kısaca yazabilir veya “+” senaryolarını kullanabilirsin.",
+          noSupport:"Bu tarayıcıda ses kaydı desteklenmiyor. Metinle devam edebilirsin.",
+          micFail:"Mikrofona erişilemedi. Tarayıcı izinlerini kontrol et."
+        }
+      }
+    };
+
+    let LANG = "ru";
+    const t = () => I18N[LANG];
+
+    // =========================
+    // Route: Moscow -> Kazan (realistic corridor)
+    // Moscow → Vladimir → Nizhny Novgorod → Cheboksary → Kazan
+    // + correct RU declensions for “we are over”
+    // =========================
+    const ROUTE = [
+      { key:"moscow", name:{ru:"Москва", en:"Moscow", tr:"Moskova"},
+        over:{ru:"Москвой", en:"Moscow", tr:"Moskova"},
+        info:{
+          ru:"Москва — крупнейший город России, культурный и деловой центр. Кремль и Красная площадь — главные символы.",
+          en:"Moscow is Russia’s largest city and a major cultural and business hub. The Kremlin and Red Square are iconic landmarks.",
+          tr:"Moskova, Rusya’nın en büyük şehri ve önemli bir kültür/iş merkezidir. Kremlin ve Kızıl Meydan en bilinen yerlerdir."
+        }
+      },
+      { key:"vladimir", name:{ru:"Владимир", en:"Vladimir", tr:"Vladimir"},
+        over:{ru:"Владимиром", en:"Vladimir", tr:"Vladimir"},
+        info:{
+          ru:"Владимир — древний город Золотого кольца. Знаменит белокаменными соборами и историческим центром.",
+          en:"Vladimir is an ancient Golden Ring city known for white-stone cathedrals and its historic core.",
+          tr:"Vladimir, Altın Halka’nın eski şehirlerinden biridir. Beyaz taş katedralleriyle ünlüdür."
+        }
+      },
+      { key:"nizhny", name:{ru:"Нижний Новгород", en:"Nizhny Novgorod", tr:"Nijniy Novgorod"},
+        over:{ru:"Нижним Новгородом", en:"Nizhny Novgorod", tr:"Nijniy Novgorod"},
+        info:{
+          ru:"Нижний Новгород — крупный город на слиянии Волги и Оки. Известен кремлём и набережными.",
+          en:"Nizhny Novgorod sits at the confluence of the Volga and Oka rivers, known for its kremlin and river embankments.",
+          tr:"Nijniy Novgorod, Volga ve Oka’nın birleştiği yerde bulunur; kalesi ve nehir kıyılarıyla bilinir."
+        }
+      },
+      { key:"cheboksary", name:{ru:"Чебоксары", en:"Cheboksary", tr:"Çeboksarı"},
+        over:{ru:"Чебоксарами", en:"Cheboksary", tr:"Çeboksarı"},
+        info:{
+          ru:"Чебоксары — столица Чувашии на Волге. Здесь красивый залив и прогулочные набережные.",
+          en:"Cheboksary is the capital of Chuvashia on the Volga River, known for its bay and waterfront promenades.",
+          tr:"Çeboksarı, Volga üzerindeki Çuvaşistan’ın başkentidir; koyu ve sahil yürüyüş yollarıyla bilinir."
+        }
+      },
+      { key:"kazan", name:{ru:"Казань", en:"Kazan", tr:"Kazan"},
+        over:{ru:"Казанью", en:"Kazan", tr:"Kazan"},
+        info:{
+          ru:"Казань — столица Татарстана на Волге. Казанский Кремль и мечеть Кул-Шариф — символы города.",
+          en:"Kazan is the capital of Tatarstan on the Volga. The Kazan Kremlin and Kul Sharif Mosque are iconic.",
+          tr:"Kazan, Volga üzerindeki Tataristan’ın başkentidir. Kazan Kremlini ve Kul Şerif Camii sembol yerlerdir."
+        }
+      }
+    ];
+
+    // =========================
+    // DOM
+    // =========================
     const messagesEl = document.getElementById('messages');
     const emptyHintEl = document.getElementById('emptyHint');
     const inputEl = document.getElementById('input');
     const sendEl = document.getElementById('send');
 
+    const burgerEl = document.getElementById('burger');
+    const drawerOverlayEl = document.getElementById('drawerOverlay');
+    const drawerCloseEl = document.getElementById('drawerClose');
+
     const plusEl = document.getElementById('plus');
     const overlayEl = document.getElementById('overlay');
     const closeSheetEl = document.getElementById('closeSheet');
-    const crewBtnEl = document.getElementById('crewBtn');
 
-    // ====== Состояние ======
-    let state = {
-      activeFlow: null,  // null | watch | sleep | flyover | aircraft | crew
-      step: null,
-      data: {}
-    };
+    const crewBtnFixedEl = document.getElementById('crewBtnFixed');
+    const voiceBtnEl = document.getElementById('voiceBtn');
 
-    function normalize(s){
-      return (s || '').toLowerCase().replace(/ё/g,'е').trim();
-    }
+    // labels
+    const titleH1 = document.getElementById('titleH1');
+    const sheetTitle = document.getElementById('sheetTitle');
+    const sheetSubtitle = document.getElementById('sheetSubtitle');
 
-    function hideEmptyHint(){
-      if (emptyHintEl) emptyHintEl.style.display = 'none';
-    }
+    const actWatchName = document.getElementById('actWatchName');
+    const actWatchDesc = document.getElementById('actWatchDesc');
+    const actSleepName = document.getElementById('actSleepName');
+    const actSleepDesc = document.getElementById('actSleepDesc');
+    const actFlyName = document.getElementById('actFlyName');
+    const actFlyDesc = document.getElementById('actFlyDesc');
+    const actAirName = document.getElementById('actAirName');
+    const actAirDesc = document.getElementById('actAirDesc');
+
+    const drawerTitle = document.getElementById('drawerTitle');
+    const navAerofriend = document.getElementById('navAerofriend');
+    const navAerofriendSub = document.getElementById('navAerofriendSub');
+    const navEntertainment = document.getElementById('navEntertainment');
+    const navEntertainmentSub = document.getElementById('navEntertainmentSub');
+    const navMap3d = document.getElementById('navMap3d');
+    const navMap3dSub = document.getElementById('navMap3dSub');
+    const langTitle = document.getElementById('langTitle');
+
+    // =========================
+    // Chat rendering
+    // =========================
+    function hideEmptyHint(){ if (emptyHintEl) emptyHintEl.style.display = 'none'; }
 
     function addMessage({from, text, chips}){
       hideEmptyHint();
@@ -487,7 +1148,7 @@
 
       const label = document.createElement('div');
       label.className = 'label';
-      label.textContent = (from === 'bot') ? 'АЭРОДРУГ' : 'Вы';
+      label.textContent = (from === 'bot') ? (LANG === 'ru' ? 'АЭРОДРУГ' : (LANG === 'tr' ? 'AERO' : 'AEROF')) : (LANG === 'ru' ? 'Вы' : (LANG === 'tr' ? 'Siz' : 'You'));
 
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
@@ -506,10 +1167,8 @@
           b.type = 'button';
           b.textContent = c.label;
 
-          // ВАЖНО: в чат показываем label, а value используем внутренне
-          b.addEventListener('click', () => {
-            handleUserInput(c.label, true, c.value);
-          });
+          // show label in chat, use value internally
+          b.addEventListener('click', () => handleUserInput(c.label, c.value));
 
           chipsWrap.appendChild(b);
         }
@@ -517,18 +1176,109 @@
       }
 
       messagesEl.appendChild(msg);
-      requestAnimationFrame(() => {
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      });
+      requestAnimationFrame(() => { messagesEl.scrollTop = messagesEl.scrollHeight; });
+    }
+
+    function addAudioMessage(audioUrl){
+      hideEmptyHint();
+
+      const msg = document.createElement('div');
+      msg.className = 'msg user';
+
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = (LANG === 'ru' ? 'Вы' : (LANG === 'tr' ? 'Siz' : 'You'));
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = audioUrl;
+      audio.style.width = '260px';
+      audio.style.maxWidth = '100%';
+
+      bubble.appendChild(audio);
+      msg.appendChild(label);
+      msg.appendChild(bubble);
+      messagesEl.appendChild(msg);
+
+      requestAnimationFrame(() => { messagesEl.scrollTop = messagesEl.scrollHeight; });
     }
 
     function aeroSay(text, chips){ addMessage({from:'bot', text, chips}); }
     function userSay(text){ addMessage({from:'user', text}); }
 
     function errorPickFromList(chips){
-      aeroSay('Простите, не понял, что вы имели ввиду. Пожалуйста выберите из списка', chips || []);
+      aeroSay(t().errors.pickList, chips || t().mainMenu);
     }
 
+    // =========================
+    // Drawer
+    // =========================
+    function openDrawer(){
+      drawerOverlayEl.classList.add('open');
+      drawerOverlayEl.setAttribute('aria-hidden', 'false');
+    }
+    function closeDrawer(){
+      drawerOverlayEl.classList.remove('open');
+      drawerOverlayEl.setAttribute('aria-hidden', 'true');
+    }
+
+    burgerEl.addEventListener('click', openDrawer);
+    drawerCloseEl.addEventListener('click', closeDrawer);
+    drawerOverlayEl.addEventListener('click', (e)=>{ if (e.target === drawerOverlayEl) closeDrawer(); });
+
+    // Nav items (stub behavior)
+    document.querySelectorAll('.navItem').forEach(item=>{
+      item.addEventListener('click', ()=>{
+        document.querySelectorAll('.navItem').forEach(x=>x.classList.remove('active'));
+        item.classList.add('active');
+
+        const page = item.getAttribute('data-page');
+        if (page !== 'aerofriend'){
+          // lightweight stub messages (still in chosen language)
+          if (page === 'entertainment'){
+            aeroSay(LANG==='ru' ? 'Открываю “Центр развлечений”. (заглушка интерфейса)' :
+                  LANG==='tr' ? '“Eğlence Merkezi” açılıyor. (arayüz taslağı)' :
+                  'Opening “Entertainment Center”. (UI stub)');
+          } else if (page === 'map3d'){
+            aeroSay(LANG==='ru' ? 'Открываю “3D-карту”. (заглушка интерфейса)' :
+                  LANG==='tr' ? '“3D Harita” açılıyor. (arayüz taslağı)' :
+                  'Opening “3D Map”. (UI stub)');
+          }
+          closeDrawer();
+          return;
+        }
+
+        closeDrawer();
+      });
+    });
+
+    // Language switching
+    function setLang(newLang){
+      LANG = newLang;
+      document.documentElement.lang = newLang === 'ru' ? 'ru' : (newLang === 'tr' ? 'tr' : 'en');
+      applyStaticTexts();
+      // Not rewriting history; only future responses. Give a small system hint:
+      aeroSay(
+        newLang === 'ru' ? 'Язык переключён на русский.' :
+        newLang === 'tr' ? 'Dil Türkçe olarak değiştirildi.' :
+        'Language switched to English.'
+      );
+    }
+
+    document.querySelectorAll('.langBtn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.langBtn').forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+        setLang(btn.getAttribute('data-lang'));
+      });
+    });
+
+    // =========================
+    // Scenario popup
+    // =========================
     function openSheet(){
       overlayEl.classList.add('open');
       overlayEl.setAttribute('aria-hidden','false');
@@ -537,114 +1287,80 @@
       overlayEl.classList.remove('open');
       overlayEl.setAttribute('aria-hidden','true');
     }
-
-    plusEl.addEventListener('click', () => {
-      if (overlayEl.classList.contains('open')) closeSheet();
-      else openSheet();
-    });
+    plusEl.addEventListener('click', ()=> overlayEl.classList.contains('open') ? closeSheet() : openSheet());
     closeSheetEl.addEventListener('click', closeSheet);
-    overlayEl.addEventListener('click', (e) => {
-      if (e.target === overlayEl) closeSheet();
-    });
-
-    overlayEl.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const action = btn.getAttribute('data-action');
+    overlayEl.addEventListener('click', (e)=>{ if (e.target === overlayEl) closeSheet(); });
+    overlayEl.querySelectorAll('[data-action]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
         closeSheet();
-        startFlow(action);
+        startFlow(btn.getAttribute('data-action'));
       });
     });
-    crewBtnEl.addEventListener('click', () => {
-      closeSheet();
-      startFlow('crew');
-    });
 
-    // ===== Watch Library (готовые варианты) =====
+    // =========================
+    // State machine
+    // =========================
+    const state = {
+      flow: null,      // null | watch | sleep | flyover | aircraft | crew
+      step: null,
+      data: {
+        routeIdx: 0,
+        watch: {}
+      }
+    };
+
+    function resetFlow(){
+      state.flow = null;
+      state.step = null;
+    }
+
+    // =========================
+    // Watch content (same lists, language-neutral titles)
+    // =========================
     const watchLibrary = {
       short: {
-        comedy: {
-          film: ['The Grand Budapest Hotel', 'Palm Springs', 'Paddington'],
-          series: ['The Office (US) — 2–3 серии', 'Modern Family — 3–4 серии', 'Brooklyn Nine-Nine — 3–4 серии']
-        },
-        detective: {
-          film: ['Knives Out', 'Sherlock Holmes (2009)', 'Gone Girl'],
-          series: ['Sherlock — 1 серия', 'Only Murders in the Building — 2–3 серии', 'Broadchurch — 2 серии']
-        },
-        drama: {
-          film: ['Whiplash', 'The Truman Show', 'Little Miss Sunshine'],
-          series: ['The Bear — 2–3 серии', 'Fleabag — 3–4 серии', 'The Queen’s Gambit — 1 серия']
-        },
-        scifi: {
-          film: ['Source Code', 'Edge of Tomorrow', 'Her'],
-          series: ['Black Mirror — 1 серия', 'Love, Death & Robots — мини-эпизоды', 'Stranger Things — 1–2 серии']
-        }
+        comedy: { film: ['The Grand Budapest Hotel','Palm Springs','Paddington'], series:['The Office — 2–3 eps','Modern Family — 3–4 eps','Brooklyn Nine-Nine — 3–4 eps'] },
+        detective: { film:['Knives Out','Sherlock Holmes (2009)','Gone Girl'], series:['Sherlock — 1 ep','Only Murders — 2–3 eps','Broadchurch — 2 eps'] },
+        drama: { film:['Whiplash','The Truman Show','Little Miss Sunshine'], series:['The Bear — 2–3 eps','Fleabag — 3–4 eps','The Queen’s Gambit — 1 ep'] },
+        scifi: { film:['Source Code','Edge of Tomorrow','Her'], series:['Black Mirror — 1 ep','Love, Death & Robots','Stranger Things — 1–2 eps'] }
       },
       mid: {
-        comedy: {
-          film: ['The Intern', 'Free Guy', 'Chef'],
-          series: ['Ted Lasso — 2–4 серии', 'Friends — 4–6 серий', 'HIMYM — 4–6 серий']
-        },
-        detective: {
-          film: ['Prisoners', 'Zodiac', 'Gone Girl'],
-          series: ['Mindhunter — 2–3 серии', 'Mare of Easttown — 2 серии', 'Broadchurch — 3 серии']
-        },
-        drama: {
-          film: ['The Social Network', 'Arrival', 'La La Land'],
-          series: ['The Queen’s Gambit — 2 серии', 'Severance — 2 серии', 'The Crown — 2 серии']
-        },
-        scifi: {
-          film: ['Ex Machina', 'The Martian', 'Arrival'],
-          series: ['The Expanse — 2–3 серии', 'Dark — 1–2 серии', 'Westworld — 1–2 серии']
-        }
+        comedy: { film:['The Intern','Free Guy','Chef'], series:['Ted Lasso — 2–4 eps','Friends — 4–6 eps','HIMYM — 4–6 eps'] },
+        detective: { film:['Prisoners','Zodiac','Gone Girl'], series:['Mindhunter — 2–3 eps','Mare of Easttown — 2 eps','Broadchurch — 3 eps'] },
+        drama: { film:['The Social Network','Arrival','La La Land'], series:['The Queen’s Gambit — 2 eps','Severance — 2 eps','The Crown — 2 eps'] },
+        scifi: { film:['Ex Machina','The Martian','Arrival'], series:['The Expanse — 2–3 eps','Dark — 1–2 eps','Westworld — 1–2 eps'] }
       },
       long: {
-        comedy: {
-          film: ['Forrest Gump', 'The Wolf of Wall Street', 'The Big Lebowski'],
-          series: ['The Office — 6–8 серий', 'Modern Family — 6–8 серий', 'Ted Lasso — 5–6 серий']
-        },
-        detective: {
-          film: ['The Godfather', 'The Irishman', 'Se7en'],
-          series: ['True Detective — 4–5 серий', 'Broadchurch — 5–6 серий', 'Mindhunter — 4–5 серий']
-        },
-        drama: {
-          film: ['Oppenheimer', 'Dune (2021)', 'Interstellar'],
-          series: ['The Crown — 4–5 серий', 'Severance — 4–5 серий', 'The Queen’s Gambit — 3–4 серии']
-        },
-        scifi: {
-          film: ['Interstellar', 'Dune (2021)', 'Blade Runner 2049'],
-          series: ['The Expanse — 5–6 серий', 'Dark — 4 серии', 'Westworld — 4–5 серий']
-        }
+        comedy: { film:['Forrest Gump','The Wolf of Wall Street','The Big Lebowski'], series:['The Office — 6–8 eps','Modern Family — 6–8 eps','Ted Lasso — 5–6 eps'] },
+        detective: { film:['The Godfather','The Irishman','Se7en'], series:['True Detective — 4–5 eps','Broadchurch — 5–6 eps','Mindhunter — 4–5 eps'] },
+        drama: { film:['Oppenheimer','Dune (2021)','Interstellar'], series:['The Crown — 4–5 eps','Severance — 4–5 eps','The Queen’s Gambit — 3–4 eps'] },
+        scifi: { film:['Interstellar','Dune (2021)','Blade Runner 2049'], series:['The Expanse — 5–6 eps','Dark — 4 eps','Westworld — 4–5 eps'] }
       }
     };
 
     function parseDuration(text){
-      const t = normalize(text);
-      if (t.startsWith('~')) return t;
+      const raw = (text||'').trim();
+      const tNorm = raw.toLowerCase().replace(/ё/g,'е');
+      if (tNorm.startsWith('~')) return tNorm;
 
-      const hm = t.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
+      const hm = tNorm.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
       if (hm){
-        const h = parseInt(hm[1],10);
-        const m = parseInt(hm[2],10);
-        if (!isNaN(h) && !isNaN(m)) return (h*60 + m);
+        const h = parseInt(hm[1],10), m = parseInt(hm[2],10);
+        if (!isNaN(h) && !isNaN(m)) return h*60+m;
       }
-      const min = t.match(/(\d{1,4})\s*(мин|м)\b/);
-      if (min){
-        const m = parseInt(min[1],10);
-        if (!isNaN(m)) return m;
-      }
-      const hr = t.match(/(\d{1,2})\s*(ч|час)/);
-      if (hr){
-        const h = parseInt(hr[1],10);
-        if (!isNaN(h)) return (h*60);
-      }
+      const min = tNorm.match(/(\d{1,4})\s*(min|minutes|мин|м)\b/);
+      if (min){ const m = parseInt(min[1],10); if (!isNaN(m)) return m; }
+      const hr = tNorm.match(/(\d{1,2})\s*(h|hour|hours|ч|час)\b/);
+      if (hr){ const h = parseInt(hr[1],10); if (!isNaN(h)) return h*60; }
       return null;
     }
 
     function durationToBucket(d){
       if (typeof d === 'string'){
-        if (d.includes('~1ч') || d.includes('~1-2')) return 'short';
-        if (d.includes('~2-4')) return 'mid';
-        if (d.includes('~4+')) return 'long';
+        if (d.includes('~1h')) return 'short';
+        if (d.includes('~1-2h')) return 'short';
+        if (d.includes('~2-4h')) return 'mid';
+        if (d.includes('~4+h')) return 'long';
         return 'mid';
       }
       if (typeof d === 'number'){
@@ -655,759 +1371,598 @@
       return 'mid';
     }
 
-    function genreToKey(g){
-      const t = normalize(g);
-      if (t.includes('комед')) return 'comedy';
-      if (t.includes('детект') || t.includes('трил') || t.includes('пожест') || t.includes('пожёст')) return 'detective';
-      if (t.includes('драм')) return 'drama';
-      if (t.includes('фантаст') || t.includes('sci') || t.includes('фэнт')) return 'scifi';
-      return null;
-    }
-
-    function formatToKey(f){
-      const t = normalize(f);
-      if (t.includes('сериал') || t.includes('мини') || t.includes('эпиз')) return 'series';
-      if (t.includes('фильм') || t.includes('кино')) return 'film';
-      return null;
-    }
-
     function buildWatchResult(bucket, genreKey, formatKey){
-      const list = (watchLibrary[bucket] && watchLibrary[bucket][genreKey] && watchLibrary[bucket][genreKey][formatKey]) || [];
-      const bucketName = (bucket === 'short' ? 'короткий' : bucket === 'mid' ? 'средний' : 'длинный');
-      return `Подборка (${bucketName} слот):\n• ${list.join('\n• ')}`;
+      const list = watchLibrary[bucket]?.[genreKey]?.[formatKey] || [];
+      const bucketLabel = t().watch.bucketName(bucket);
+      const header = t().watch.picksLabel(bucketLabel);
+      return `${header}\n• ${list.join('\n• ')}`;
     }
 
-    // ===== Flyover: Казань → Москва =====
-    function parseMinutesLoose(text){
-      const t = normalize(text);
-      const hm = t.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
-      if (hm){
-        const h = parseInt(hm[1],10);
-        const m = parseInt(hm[2],10);
-        if (!isNaN(h) && !isNaN(m)) return (h*60 + m);
-      }
-      const min = t.match(/(\d{1,4})\s*(мин|м)\b/);
-      if (min){
-        const m = parseInt(min[1],10);
-        if (!isNaN(m)) return m;
-      }
-      const hr = t.match(/(\d{1,2})\s*(ч|час)/);
-      if (hr){
-        const h = parseInt(hr[1],10);
-        if (!isNaN(h)) return h*60;
-      }
-      return null;
+    // =========================
+    // Route helpers
+    // =========================
+    function routeListText(){
+      const title = t().fly.routeTitle;
+      const lines = ROUTE.map(r => "• " + r.name[LANG]);
+      return `${title}\n${lines.join("\n")}`;
     }
 
-    function flyoverAnswer(minutesFromTakeoff){
-      if (minutesFromTakeoff == null){
-        return `Маршрут: Казань → Москва.\nСкажите, сколько минут прошло с взлёта — подскажу ориентиры.`;
-      }
-      if (minutesFromTakeoff <= 15){
-        return `Казань → Москва.\nСейчас обычно ещё Татарстан: изгибы Волги/Камы, поля и пригородные районы.`;
-      }
-      if (minutesFromTakeoff <= 35){
-        return `Казань → Москва.\nЧасто в этом окне под крылом районы Чувашии/Марий Эл.\nОриентиры: Чебоксары, Йошкар-Ола, широкая Волга.`;
-      }
-      if (minutesFromTakeoff <= 60){
-        return `Казань → Москва.\nСередина маршрута: нередко Нижегородская область.\nОриентиры: Нижний Новгород, слияние Волги и Оки, крупные мосты и петли рек.`;
-      }
-      if (minutesFromTakeoff <= 85){
-        return `Казань → Москва.\nБлиже к финалу часто Владимирская/Московская области.\nОриентиры: Владимир, далее плотная сетка дорог и населённых пунктов.`;
-      }
-      return `Казань → Москва.\nЕсли больше ~1:25 после взлёта, вероятно зона снижения.\nОриентиры: плотная застройка, магистрали, водоёмы и река Москва.`;
+    function currentRoutePoint(){
+      const idx = Math.min(state.data.routeIdx || 0, ROUTE.length - 1);
+      return ROUTE[idx];
     }
 
-    // ===== Универсальные списки чипов =====
-    const chipsDuration = [
-      {label:'До 1 часа', value:'~1ч'},
-      {label:'1–2 часа', value:'~1-2ч'},
-      {label:'2–4 часа', value:'~2-4ч'},
-      {label:'Больше 4 часов', value:'~4+ч'}
-    ];
-
-    const chipsGenre = [
-      {label:'Комедия', value:'genre:comedy'},
-      {label:'Детектив/триллер', value:'genre:detective'},
-      {label:'Драма', value:'genre:drama'},
-      {label:'Фантастика', value:'genre:scifi'}
-    ];
-
-    const chipsFormat = [
-      {label:'Сериал', value:'format:series'},
-      {label:'Фильм', value:'format:film'}
-    ];
-
-    const chipsCrew = [
-      {label:'Принесите воду', value:'crew:water'},
-      {label:'Нужна подушка', value:'crew:pillow'},
-      {label:'Закажите ужин', value:'crew:dinner'},
-      {label:'Принесите детское меню', value:'crew:kids'}
-    ];
-
-    // ===== Intent router (глобальные триггеры) =====
-    function detectGlobalIntent(text){
-      const t = normalize(text);
-
-      // crew
-      if (t.includes('воду')) return {flow:'crew', internal:'crew:water', display:'Принесите воду'};
-      if (t.includes('подуш')) return {flow:'crew', internal:'crew:pillow', display:'Нужна подушка'};
-      if (t.includes('ужин')) return {flow:'crew', internal:'crew:dinner', display:'Закажите ужин'};
-      if (t.includes('детск') && (t.includes('меню') || t.includes('детское'))) return {flow:'crew', internal:'crew:kids', display:'Принесите детское меню'};
-      if (t.includes('бортпровод') || t.includes('проводник')) return {flow:'crew'};
-
-      // flyover
-      if (t.includes('что мы пролета') || t.includes('что пролета') || t.includes('где летим') || t.includes('над чем')) return {flow:'flyover'};
-
-      // sleep
-      if (t.includes('уснуть') || t.includes('сон') || t.includes('засып')) return {flow:'sleep'};
-
-      // aircraft facts
-      if (t.includes('самолет') || t.includes('самолёт') || t.includes('турбул') || t.includes('скорост') || t.includes('высот')) return {flow:'aircraft'};
-
-      // watch
-      if (t.includes('что посмотреть') || t.includes('посоветуй') || t.includes('кино') || t.includes('фильм') || t.includes('сериал')) return {flow:'watch'};
-
-      // genre/format refiners as triggers (even if user just writes "детектив", "пожестче")
-      if (genreToKey(t)) return {flow:'watch', pre:{genreKey: genreToKey(t)}};
-      if (t.includes('пожест') || t.includes('пожёст')) return {flow:'watch', pre:{genreKey:'detective'}};
-
-      return null;
+    function advanceRoute(){
+      if (state.data.routeIdx == null) state.data.routeIdx = 0;
+      if (state.data.routeIdx < ROUTE.length - 1) state.data.routeIdx += 1;
     }
 
-    // ====== Старт сценариев ======
-    function startFlow(flow, pre=null){
-      state.activeFlow = flow;
+    function flyNowAnswer(){
+      const p = currentRoutePoint();
+      const line1 = t().fly.weOver(p.over[LANG]);
+      const line2 = p.info[LANG];
+      advanceRoute();
+      return `${line1}\n${line2}`;
+    }
+
+    // =========================
+    // Crew phrases
+    // =========================
+    function crewPhraseByValue(v){
+      // use current language labels so the echo looks native
+      const opt = t().crew.options.find(x => x.value === v);
+      return opt ? opt.label : null;
+    }
+
+    // =========================
+    // Start flows
+    // =========================
+    function startFlow(flow){
+      state.flow = flow;
       state.step = null;
-      state.data = Object.assign({}, pre || {});
 
-      switch(flow){
-        case 'watch':
-          state.step = 'askDuration';
-          aeroSay(
-            'Подберу, что посмотреть. Сколько примерно лететь? Можно “2:30” или “150 минут”.',
-            chipsDuration
-          );
-          break;
-
-        case 'sleep':
-          state.step = 'sleepIntro';
-          aeroSay(
-            'Сделаем спокойный “спуск” в сон. Сколько времени есть?',
-            [
-              {label:'5 минут', value:'sleep:5'},
-              {label:'10 минут', value:'sleep:10'},
-              {label:'Просто советы', value:'sleep:tips'}
-            ]
-          );
-          break;
-
-        case 'flyover':
-          state.step = 'flyoverAskTime';
-          state.data.route = 'Казань → Москва';
-          aeroSay('Маршрут: Казань → Москва. Сколько прошло с взлёта? (например: “20 минут” или “0:45”)');
-          break;
-
-        case 'aircraft':
-          state.step = 'aircraftFact';
-          aeroSay(
-            'Короткий факт: на крейсерском режиме лайнер обычно летит на высоте около 10–12 км — это оптимально по расходу топлива и погоде.',
-            [
-              {label:'Ещё факт', value:'air:more'},
-              {label:'Про скорость', value:'air:speed'},
-              {label:'Про турбулентность', value:'air:turb'}
-            ]
-          );
-          break;
-
-        case 'crew':
-          state.step = 'crewPick';
-          aeroSay('Что передать бортпроводнику?', chipsCrew);
-          break;
+      if (flow === 'watch'){
+        state.step = 'askDuration';
+        aeroSay(t().watch.askDuration, t().watch.durationChips);
+        return;
       }
+      if (flow === 'sleep'){
+        state.step = 'sleepIntro';
+        aeroSay(t().sleep.intro, t().sleep.chips);
+        return;
+      }
+      if (flow === 'flyover'){
+        state.step = 'flyMenu';
+        aeroSay(t().fly.menu, t().fly.chips);
+        return;
+      }
+      if (flow === 'aircraft'){
+        state.step = 'airMenu';
+        aeroSay(t().aircraft.intro, t().aircraft.chips);
+        return;
+      }
+      if (flow === 'crew'){
+        state.step = 'crewPick';
+        aeroSay(t().crew.ask, t().crew.options);
+        return;
+      }
+
+      resetFlow();
+      errorPickFromList();
     }
 
-    // ====== Обработка ввода ======
-    // text: то, что показываем в оранжевом сообщении
-    // internalValue: машинный value (для чипов)
-    function handleUserInput(text, fromChip=false, internalValue=null){
-      const trimmed = (text || '').trim();
-      if (!trimmed) return;
+    // =========================
+    // Internal handler (chip values)
+    // =========================
+    function handleInternal(value){
+      if (!value) return false;
 
-      // показываем только human-текст (label), никогда не показываем crew:water
-      userSay(trimmed);
-
-      const tNorm = normalize(trimmed);
-
-      // 1) Если нет активного сценария — пробуем глобальные триггеры
-      if (!state.activeFlow){
-        const intent = detectGlobalIntent(trimmed);
-        if (intent){
-          startFlow(intent.flow, intent.pre || null);
-
-          // если intent включает моментальный выбор (например "воду")
-          if (intent.internal){
-            // симулируем внутренний выбор без вывода crew:water в чат
-            processInternal(intent.internal, intent.display || trimmed);
-          }
-          return;
-        }
-
-        // не поняли вообще
-        errorPickFromList([
-          {label:'🎬 Подборка на рейс', value:'start:watch'},
-          {label:'🌙 Мягко уснуть', value:'start:sleep'},
-          {label:'🗺️ Что мы пролетаем', value:'start:flyover'},
-          {label:'✈️ Интересное о самолёте', value:'start:aircraft'},
-          {label:'Связь с бортпроводником', value:'start:crew'}
-        ]);
-        return;
-      }
-
-      // 2) Есть активный сценарий — сначала обрабатываем internalValue (чипы)
-      if (internalValue){
-        processInternal(internalValue, trimmed);
-        return;
-      }
-
-      // 3) Затем — текстовый ввод как триггеры внутри сценариев
-      // (пример: пользователь пишет "детектив" или "пожестче")
-      const innerIntent = detectGlobalIntent(trimmed);
-      if (innerIntent && innerIntent.flow && innerIntent.flow !== state.activeFlow){
-        // разрешаем переключиться
-        startFlow(innerIntent.flow, innerIntent.pre || null);
-        if (innerIntent.internal){
-          processInternal(innerIntent.internal, innerIntent.display || trimmed);
-        }
-        return;
-      }
-
-      // 4) Если триггер попадает в текущий flow (например "детектив" внутри watch)
-      if (state.activeFlow === 'watch'){
-        handleWatchText(trimmed);
-        return;
-      }
-
-      if (state.activeFlow === 'sleep'){
-        handleSleepText(trimmed);
-        return;
-      }
-
-      if (state.activeFlow === 'flyover'){
-        handleFlyoverText(trimmed);
-        return;
-      }
-
-      if (state.activeFlow === 'aircraft'){
-        handleAircraftText(trimmed);
-        return;
-      }
-
-      if (state.activeFlow === 'crew'){
-        handleCrewText(trimmed);
-        return;
-      }
-    }
-
-    function processInternal(value, displayText){
-      // общие команды старта из ошибки
+      // Global starts
       if (value.startsWith('start:')){
-        const flow = value.split(':')[1];
-        startFlow(flow);
-        return;
+        startFlow(value.split(':')[1]);
+        return true;
       }
 
-      // watch internals
-      if (value === '~1ч' || value === '~1-2ч' || value === '~2-4ч' || value === '~4+ч'){
-        if (state.activeFlow === 'watch' && state.step === 'askDuration'){
-          state.data.duration = value;
-          state.data.bucket = durationToBucket(value);
-          state.step = 'askGenre';
-
-          // если жанр уже предвыбран (например пользователь ввёл "детектив" ещё до длительности)
-          if (state.data.genreKey){
-            aeroSay('Жанр понял. Формат: сериал или фильм?', chipsFormat);
-            state.step = 'askFormat';
-          } else {
-            aeroSay('Окей. Какой жанр берём?', chipsGenre);
-          }
-          return;
+      // Crew: ALWAYS handle done/more (fix)
+      if (value === 'crew:done'){
+        aeroSay(t().crew.ok);
+        resetFlow();
+        return true;
+      }
+      if (value === 'crew:more'){
+        state.flow = 'crew';
+        state.step = 'crewPick';
+        aeroSay(t().crew.ask, t().crew.options);
+        return true;
+      }
+      if (value.startsWith('crew:')){
+        state.flow = 'crew';
+        state.step = 'crewDone';
+        const phrase = crewPhraseByValue(value);
+        if (!phrase){
+          errorPickFromList(t().crew.options);
+          return true;
         }
+        aeroSay(t().crew.accepted(phrase), t().crew.after);
+        return true;
       }
 
-      if (value.startsWith('genre:')){
-        if (state.activeFlow === 'watch'){
-          state.data.genreKey = value.split(':')[1];
-          state.step = 'askFormat';
-          aeroSay('Формат: сериал или фильм?', chipsFormat);
-          return;
-        }
+      // Flyover
+      if (value === 'fly:list'){
+        state.flow = 'flyover';
+        state.step = 'flyMenu';
+        aeroSay(routeListText(), t().fly.listAfter);
+        return true;
+      }
+      if (value === 'fly:now'){
+        state.flow = 'flyover';
+        state.step = 'flyMenu';
+        aeroSay(flyNowAnswer(), t().fly.nowChips);
+        return true;
       }
 
-      if (value.startsWith('format:')){
-        if (state.activeFlow === 'watch'){
-          state.data.formatKey = value.split(':')[1];
-          showWatchResult();
-          return;
-        }
+      // Aircraft
+      if (value === 'air:speed'){
+        state.flow = 'aircraft';
+        aeroSay(t().aircraft.speed, t().aircraft.chips);
+        return true;
+      }
+      if (value === 'air:turb'){
+        state.flow = 'aircraft';
+        aeroSay(t().aircraft.turb, t().aircraft.chips);
+        return true;
+      }
+      if (value === 'air:more'){
+        state.flow = 'aircraft';
+        const facts = t().aircraft.facts;
+        aeroSay(facts[Math.floor(Math.random()*facts.length)], t().aircraft.chips);
+        return true;
       }
 
-      // sleep internals
-      if (value === 'sleep:5'){
-        if (state.activeFlow === 'sleep'){
-          state.step = 'sleep5';
-          aeroSay(
-            '5 минут:\n1) Вдох 4 секунды.\n2) Выдох 6 секунд.\nПовторите 8 циклов.\n\nПродолжить ещё 2 минуты?',
-            [
-              {label:'Да, ещё 2', value:'sleep:more2'},
-              {label:'Нет, достаточно', value:'sleep:done'}
-            ]
-          );
-          return;
-        }
-      }
-      if (value === 'sleep:10'){
-        if (state.activeFlow === 'sleep'){
-          state.step = 'sleep10';
-          aeroSay('10 минут: хотите “только тайминг” или “с подсказками”?', [
-            {label:'Только тайминг', value:'sleep:timing'},
-            {label:'С подсказками', value:'sleep:coach'}
-          ]);
-          return;
-        }
-      }
-      if (value === 'sleep:tips'){
-        if (state.activeFlow === 'sleep'){
-          aeroSay('Советы для сна:\n• Маска/беруши\n• Плед под поясницу\n• Сумка под ступни\n• Вода небольшими глотками\n\nЕсли вы у окна/прохода — скажите, подскажу позу.');
-          resetFlow();
-          return;
-        }
-      }
-      if (value === 'sleep:more2'){
-        if (state.activeFlow === 'sleep'){
-          aeroSay('Ещё 2 минуты:\nВдох 4 — выдох 8.\nЕсли сбились — спокойно начните заново.\n\nГотово.');
-          resetFlow();
-          return;
-        }
-      }
-      if (value === 'sleep:done'){
-        if (state.activeFlow === 'sleep'){
-          aeroSay('Окей. Если мысли мешают — считайте выдохи от 1 до 20 и снова с 1.');
-          resetFlow();
-          return;
-        }
-      }
-      if (value === 'sleep:timing' || value === 'sleep:coach'){
-        if (state.activeFlow === 'sleep'){
-          state.step = 'sleep10Start';
-          aeroSay('Скажите “старт”. Я проведу по этапам короткими сообщениями.');
-          return;
-        }
-      }
-
-      // flyover quick chips (we pass as plain text, so it will go to text handler usually)
-      // aircraft internals
-      if (value === 'air:more' || value === 'air:speed' || value === 'air:turb'){
-        if (state.activeFlow === 'aircraft'){
-          if (value === 'air:more'){ handleAircraftText('ещё'); return; }
-          if (value === 'air:speed'){ handleAircraftText('скорость'); return; }
-          if (value === 'air:turb'){ handleAircraftText('турбулентность'); return; }
-        }
-      }
-
-      // crew internals
-      if (value.startsWith('crew:') && state.activeFlow === 'crew'){
-        handleCrewInternal(value);
-        return;
-      }
-    }
-
-    function resetFlow(){
-      state.activeFlow = null;
-      state.step = null;
-      state.data = {};
-    }
-
-    // ===== WATCH handlers =====
-    function handleWatchText(text){
-      const t = normalize(text);
-
-      if (state.step === 'askDuration'){
-        const d = parseDuration(text);
-        if (d === null){
-          errorPickFromList(chipsDuration);
-          return;
-        }
-        state.data.duration = d;
-        state.data.bucket = durationToBucket(d);
-
+      // Watch
+      if (value === '~1h' || value === '~1-2h' || value === '~2-4h' || value === '~4+h'){
+        if (state.flow !== 'watch' || state.step !== 'askDuration') return false;
+        state.data.watch.duration = value;
+        state.data.watch.bucket = durationToBucket(value);
         state.step = 'askGenre';
-        if (state.data.genreKey){
-          aeroSay('Жанр понял. Формат: сериал или фильм?', chipsFormat);
-          state.step = 'askFormat';
-        } else {
-          aeroSay('Окей. Какой жанр берём?', chipsGenre);
-        }
-        return;
+        aeroSay(t().watch.askGenre, t().watch.genreChips);
+        return true;
       }
-
-      if (state.step === 'askGenre'){
-        const gk = genreToKey(text);
-        if (!gk){
-          errorPickFromList(chipsGenre);
-          return;
-        }
-        state.data.genreKey = gk;
+      if (value.startsWith('genre:')){
+        if (state.flow !== 'watch') return false;
+        state.data.watch.genre = value.split(':')[1];
         state.step = 'askFormat';
-        aeroSay('Формат: сериал или фильм?', chipsFormat);
-        return;
+        aeroSay(t().watch.askFormat, t().watch.formatChips);
+        return true;
       }
-
-      if (state.step === 'askFormat'){
-        const fk = formatToKey(text);
-        if (!fk){
-          errorPickFromList(chipsFormat);
-          return;
-        }
-        state.data.formatKey = fk;
-        showWatchResult();
-        return;
-      }
-
-      if (state.step === 'refine'){
-        if (t.includes('пожест') || t.includes('пожёст')){
-          // если формат не выбран — попросим
-          if (!state.data.formatKey){
-            aeroSay('Чтобы дать подборку, выберите формат: сериал или фильм?', chipsFormat);
-            state.step = 'askFormat';
-            state.data.genreKey = 'detective';
-            return;
-          }
-          state.data.genreKey = 'detective';
-          const res = buildWatchResult(state.data.bucket || 'mid', 'detective', state.data.formatKey);
-          aeroSay('Пожёстче:\n' + res, refineChips());
-          return;
-        }
-
-        const gk = genreToKey(text);
-        if (gk){
-          // пользователь ввёл жанр на этапе refine
-          state.data.genreKey = gk;
-          if (!state.data.formatKey){
-            aeroSay('Выберите формат: сериал или фильм?', chipsFormat);
-            state.step = 'askFormat';
-            return;
-          }
-          aeroSay(buildWatchResult(state.data.bucket || 'mid', state.data.genreKey, state.data.formatKey), refineChips());
-          return;
-        }
-
-        if (t.includes('полегч')){
-          state.data.genreKey = 'comedy';
-          if (!state.data.formatKey){
-            aeroSay('Выберите формат: сериал или фильм?', chipsFormat);
-            state.step = 'askFormat';
-            return;
-          }
-          aeroSay('Полегче:\n' + buildWatchResult(state.data.bucket || 'mid', 'comedy', state.data.formatKey), refineChips());
-          return;
-        }
-
-        errorPickFromList(refineChips());
-        return;
-      }
-
-      // fallback
-      errorPickFromList([
-        {label:'Выбрать длительность', value:'start:watch'}
-      ]);
-    }
-
-    function refineChips(){
-      return [
-        {label:'Полегче', value:'watch:lighter'},
-        {label:'Пожёстче', value:'watch:harder'},
-        {label:'Сменить жанр', value:'watch:genre'}
-      ];
-    }
-
-    function showWatchResult(){
-      if (!state.data.bucket){
-        state.data.bucket = durationToBucket(state.data.duration || 'mid');
-      }
-      if (!state.data.genreKey || !state.data.formatKey){
-        // если чего-то не хватает — просим выбрать
-        if (!state.data.genreKey){
-          aeroSay('Выберите жанр:', chipsGenre);
-          state.step = 'askGenre';
-          return;
-        }
-        if (!state.data.formatKey){
-          aeroSay('Выберите формат:', chipsFormat);
-          state.step = 'askFormat';
-          return;
-        }
-      }
-
-      const res = buildWatchResult(state.data.bucket, state.data.genreKey, state.data.formatKey);
-      aeroSay(res, [
-        {label:'Полегче', value:'watch:lighter'},
-        {label:'Пожёстче', value:'watch:harder'},
-        {label:'Сменить жанр', value:'watch:genre'}
-      ]);
-      state.step = 'refine';
-    }
-
-    // process refine internal commands
-    function handleWatchInternal(value){
-      if (value === 'watch:lighter'){
-        state.data.genreKey = 'comedy';
-        showWatchResult();
-        return;
-      }
-      if (value === 'watch:harder'){
-        state.data.genreKey = 'detective';
-        showWatchResult();
-        return;
+      if (value.startsWith('format:')){
+        if (state.flow !== 'watch') return false;
+        state.data.watch.format = value.split(':')[1];
+        state.step = 'refine';
+        aeroSay(buildWatchResult(
+          state.data.watch.bucket || 'mid',
+          state.data.watch.genre || 'comedy',
+          state.data.watch.format || 'film'
+        ), t().watch.refineChips);
+        return true;
       }
       if (value === 'watch:genre'){
-        aeroSay('Выберите жанр:', chipsGenre);
+        if (state.flow !== 'watch') return false;
         state.step = 'askGenre';
-        return;
+        aeroSay(t().watch.askGenre, t().watch.genreChips);
+        return true;
       }
+      if (value === 'watch:lighter'){
+        if (state.flow !== 'watch') return false;
+        state.data.watch.genre = 'comedy';
+        state.step = 'refine';
+        aeroSay(buildWatchResult(
+          state.data.watch.bucket || 'mid',
+          'comedy',
+          state.data.watch.format || 'film'
+        ), t().watch.refineChips);
+        return true;
+      }
+      if (value === 'watch:harder'){
+        if (state.flow !== 'watch') return false;
+        state.data.watch.genre = 'detective';
+        state.step = 'refine';
+        aeroSay(buildWatchResult(
+          state.data.watch.bucket || 'mid',
+          'detective',
+          state.data.watch.format || 'film'
+        ), t().watch.refineChips);
+        return true;
+      }
+
+      // Sleep
+      if (value === 'sleep:tips'){
+        if (state.flow !== 'sleep') return false;
+        aeroSay(t().sleep.tips);
+        resetFlow();
+        return true;
+      }
+      if (value === 'sleep:5'){
+        if (state.flow !== 'sleep') return false;
+        state.step = 'sleep5';
+        aeroSay(t().sleep.five, t().sleep.fiveChips);
+        return true;
+      }
+      if (value === 'sleep:more2'){
+        if (state.flow !== 'sleep') return false;
+        aeroSay(t().sleep.more2);
+        resetFlow();
+        return true;
+      }
+      if (value === 'sleep:done'){
+        if (state.flow !== 'sleep') return false;
+        aeroSay(t().sleep.done);
+        resetFlow();
+        return true;
+      }
+      if (value === 'sleep:10'){
+        if (state.flow !== 'sleep') return false;
+        state.step = 'sleep10';
+        aeroSay(t().sleep.tenAsk, t().sleep.tenChips);
+        return true;
+      }
+      if (value === 'sleep:timing' || value === 'sleep:coach'){
+        if (state.flow !== 'sleep') return false;
+        state.step = 'sleep10Start';
+        aeroSay(t().sleep.askStart);
+        return true;
+      }
+
+      return false;
     }
 
-    // ===== SLEEP handlers =====
+    // =========================
+    // Text intent detection (minimal + multilingual)
+    // =========================
+    function normalize(s){ return (s||'').toLowerCase().replace(/ё/g,'е').trim(); }
+
+    function detectIntent(text){
+      const n = normalize(text);
+
+      // Smalltalk
+      if (n.includes('привет') || n.includes('здрав') || n === 'hi' || n.includes('hello') || n.includes('merhaba') || n.includes('selam')){
+        return {type:'smalltalk', kind:'hello'};
+      }
+      if (n.includes('спасибо') || n.includes('thanks') || n.includes('teşekkür') || n.includes('tesekkur')){
+        return {type:'smalltalk', kind:'thanks'};
+      }
+
+      // Crew (done)
+      if (n === 'готово' || n.includes('готов')) return {type:'internal', value:'crew:done'};
+      if (n.includes('done') || n.includes('finish')) return {type:'internal', value:'crew:done'};
+      if (n.includes('bitti') || n.includes('tamam')) return {type:'internal', value:'crew:done'};
+
+      // Crew keywords
+      if (n.includes('бортпровод') || n.includes('проводник') || n.includes('crew') || n.includes('cabin') || n.includes('kabin')){
+        return {type:'start', flow:'crew'};
+      }
+      if (n.includes('воду') || n.includes('water') || n.includes('su')) return {type:'internal', value:'crew:water'};
+      if (n.includes('подуш') || n.includes('pillow') || n.includes('yast')) return {type:'internal', value:'crew:pillow'};
+      if (n.includes('ужин') || n.includes('dinner') || n.includes('akşam')) return {type:'internal', value:'crew:dinner'};
+      if ((n.includes('детск') && n.includes('меню')) || n.includes('kids menu') || n.includes('çocuk menü') || n.includes('cocuk menu')){
+        return {type:'internal', value:'crew:kids'};
+      }
+
+      // Flyover
+      if (n.includes('где мы') || n.includes('а где мы') || n.includes('where are we') || n.includes('where now') || n.includes('şu an') || n.includes('neredeyiz')){
+        return {type:'internal', value:'fly:now'};
+      }
+      if (n.includes('маршрут') || n.includes('какие города') || n.includes('route') || n.includes('cities') || n.includes('rota') || n.includes('şehir')){
+        return {type:'internal', value:'fly:list'};
+      }
+      if (n.includes('пролетаем') || n.includes('overfly') || n.includes('geçiyoruz')) return {type:'start', flow:'flyover'};
+
+      // Watch
+      if (n.includes('что посмотреть') || n.includes('посоветуй') || n.includes('movie') || n.includes('series') || n.includes('watch') || n.includes('izle') || n.includes('film') || n.includes('dizi')){
+        return {type:'start', flow:'watch'};
+      }
+
+      // Sleep
+      if (n.includes('уснуть') || n.includes('сон') || n.includes('sleep') || n.includes('uyku') || n.includes('uyum')){
+        return {type:'start', flow:'sleep'};
+      }
+
+      // Aircraft
+      if (n.includes('самолет') || n.includes('самолёт') || n.includes('turb') || n.includes('turbu') || n.includes('speed') || n.includes('hız') || n.includes('irtifa') || n.includes('altitude') || n.includes('aircraft') || n.includes('uçak') || n.includes('ucak')){
+        return {type:'start', flow:'aircraft'};
+      }
+
+      // Sleep start (typed)
+      if (n === 'старт' || n === 'start') return {type:'sleepStart'};
+
+      return null;
+    }
+
+    // =========================
+    // Flow text handlers
+    // =========================
+    function handleWatchText(text){
+      if (state.step === 'askDuration'){
+        const d = parseDuration(text);
+        if (d == null){
+          errorPickFromList(t().watch.durationChips);
+          return;
+        }
+        state.data.watch.duration = d;
+        state.data.watch.bucket = durationToBucket(d);
+        state.step = 'askGenre';
+        aeroSay(t().watch.askGenre, t().watch.genreChips);
+        return;
+      }
+
+      // For text-only genre/format, keep it strict (chips preferred)
+      errorPickFromList(t().watch.genreChips);
+    }
+
     function handleSleepText(text){
-      const t = normalize(text);
+      const n = normalize(text);
 
       if (state.step === 'sleepIntro'){
-        if (t.includes('5')){ processInternal('sleep:5', '5 минут'); return; }
-        if (t.includes('10')){ processInternal('sleep:10', '10 минут'); return; }
-        if (t.includes('совет') || t.includes('tips')){ processInternal('sleep:tips', 'Просто советы'); return; }
-        errorPickFromList([
-          {label:'5 минут', value:'sleep:5'},
-          {label:'10 минут', value:'sleep:10'},
-          {label:'Просто советы', value:'sleep:tips'}
-        ]);
-        return;
-      }
-
-      if (state.step === 'sleep5'){
-        if (t.includes('ещё')){ processInternal('sleep:more2', 'Да, ещё 2'); return; }
-        if (t.includes('достат')){ processInternal('sleep:done', 'Нет, достаточно'); return; }
-        errorPickFromList([
-          {label:'Да, ещё 2', value:'sleep:more2'},
-          {label:'Нет, достаточно', value:'sleep:done'}
-        ]);
-        return;
-      }
-
-      if (state.step === 'sleep10'){
-        if (t.includes('тайминг')){ processInternal('sleep:timing', 'Только тайминг'); return; }
-        if (t.includes('подсказ')){ processInternal('sleep:coach', 'С подсказками'); return; }
-        errorPickFromList([
-          {label:'Только тайминг', value:'sleep:timing'},
-          {label:'С подсказками', value:'sleep:coach'}
-        ]);
+        // accept digits
+        if (n.includes('5')) return handleInternal('sleep:5');
+        if (n.includes('10')) return handleInternal('sleep:10');
+        errorPickFromList(t().sleep.chips);
         return;
       }
 
       if (state.step === 'sleep10Start'){
-        if (t.includes('старт')){
-          aeroSay('Старт. 2 минуты: вдох 4 — выдох 6.');
-          setTimeout(() => aeroSay('Дальше. 3 минуты: расслабьте лоб → глаза → челюсть → плечи → руки.'), 2200);
-          setTimeout(() => aeroSay('Финал. 5 минут: представьте “тихий коридор”, каждый шаг — выдох.'), 4400);
-          setTimeout(() => { aeroSay('Готово. Если хочется — повторите финал ещё 3–5 минут.'); resetFlow(); }, 6600);
+        if (n === 'старт' || n === 'start'){
+          aeroSay(t().sleep.start1);
+          setTimeout(()=>aeroSay(t().sleep.start2), 2200);
+          setTimeout(()=>aeroSay(t().sleep.start3), 4400);
+          setTimeout(()=>{ aeroSay(t().sleep.startDone); resetFlow(); }, 6600);
           return;
         }
-        aeroSay('Напишите “старт”.');
+        aeroSay(t().sleep.startNeed);
         return;
       }
 
-      errorPickFromList([
-        {label:'5 минут', value:'sleep:5'},
-        {label:'10 минут', value:'sleep:10'}
-      ]);
+      errorPickFromList(t().sleep.chips);
     }
 
-    // ===== FLYOVER handlers =====
-    function handleFlyoverText(text){
-      if (state.step !== 'flyoverAskTime'){
-        state.step = 'flyoverAskTime';
-      }
-      const mins = parseMinutesLoose(text);
-      if (mins == null){
-        errorPickFromList([
-          {label:'20 минут', value:'fly:20'},
-          {label:'0:45', value:'fly:045'},
-          {label:'1:10', value:'fly:110'}
-        ]);
-        return;
-      }
-      aeroSay(flyoverAnswer(mins), [
-        {label:'20 минут', value:'fly:20'},
-        {label:'0:45', value:'fly:045'},
-        {label:'1:10', value:'fly:110'}
-      ]);
+    function handleFlyText(){
+      errorPickFromList(t().fly.chips);
     }
 
-    // ===== AIRCRAFT handlers =====
     function handleAircraftText(text){
-      const t = normalize(text);
-
-      if (t.includes('скорост')){
-        aeroSay('Крейсерская скорость у лайнеров обычно порядка 800–900 км/ч. Ветер может заметно менять скорость “по земле”.', [
-          {label:'Ещё факт', value:'air:more'},
-          {label:'Про турбулентность', value:'air:turb'}
-        ]);
-        return;
-      }
-
-      if (t.includes('турбул')){
-        aeroSay('Если трясёт: ремень пристёгнут. Экипаж может менять эшелон/скорость и обходить зоны по погоде и докладам.', [
-          {label:'Ещё факт', value:'air:more'},
-          {label:'Про скорость', value:'air:speed'}
-        ]);
-        return;
-      }
-
-      if (t.includes('ещё')){
-        const facts = [
-          'В салоне поддерживается давление, чтобы было комфортно дышать на высоте.',
-          'Закрылки и предкрылки помогают летать на меньшей скорости при взлёте и посадке.',
-          'При посадке самолёт “прибирает” подъёмную силу и гасит скорость — поэтому ощущаются изменения угла и шума.'
-        ];
-        aeroSay(facts[Math.floor(Math.random()*facts.length)], [
-          {label:'Ещё факт', value:'air:more'},
-          {label:'Про скорость', value:'air:speed'},
-          {label:'Про турбулентность', value:'air:turb'}
-        ]);
-        return;
-      }
-
-      errorPickFromList([
-        {label:'Ещё факт', value:'air:more'},
-        {label:'Про скорость', value:'air:speed'},
-        {label:'Про турбулентность', value:'air:turb'}
-      ]);
-    }
-
-    // ===== CREW handlers =====
-    function handleCrewInternal(value){
-      const map = {
-        'crew:water': 'Принесите воду',
-        'crew:pillow': 'Нужна подушка',
-        'crew:dinner': 'Закажите ужин',
-        'crew:kids': 'Принесите детское меню'
-      };
-
-      const phrase = map[value];
-      if (!phrase){
-        errorPickFromList(chipsCrew);
-        return;
-      }
-
-      aeroSay(`Принято: «${phrase}». Хотите добавить что-то ещё?`, [
-        {label:'Ещё запрос', value:'crew:more'},
-        {label:'Готово', value:'crew:done'}
-      ]);
-      state.step = 'crewDone';
+      const n = normalize(text);
+      if (n.includes('speed') || n.includes('скорост') || n.includes('hız') || n.includes('hiz')) return handleInternal('air:speed');
+      if (n.includes('turb') || n.includes('турбул') || n.includes('turbu')) return handleInternal('air:turb');
+      if (n.includes('ещё') || n.includes('more') || n.includes('daha')) return handleInternal('air:more');
+      errorPickFromList(t().aircraft.chips);
     }
 
     function handleCrewText(text){
-      const t = normalize(text);
-
-      if (state.step === 'crewPick'){
-        if (t.includes('воду')){ handleCrewInternal('crew:water'); return; }
-        if (t.includes('подуш')){ handleCrewInternal('crew:pillow'); return; }
-        if (t.includes('ужин')){ handleCrewInternal('crew:dinner'); return; }
-        if (t.includes('детск') && (t.includes('меню') || t.includes('детское'))){ handleCrewInternal('crew:kids'); return; }
-        errorPickFromList(chipsCrew);
+      // Always allow done via text, regardless of state
+      const n = normalize(text);
+      if (n === 'готово' || n.includes('готов') || n.includes('done') || n.includes('finish') || n.includes('bitti') || n.includes('tamam')){
+        handleInternal('crew:done');
         return;
       }
-
-      if (state.step === 'crewDone'){
-        if (t.includes('ещё')){
-          state.step = 'crewPick';
-          aeroSay('Что передать бортпроводнику?', chipsCrew);
-          return;
-        }
-        if (t.includes('готов')){
-          aeroSay('Хорошо.');
-          resetFlow();
-          return;
-        }
-        errorPickFromList([
-          {label:'Ещё запрос', value:'crew:more'},
-          {label:'Готово', value:'crew:done'}
-        ]);
+      if (n.includes('ещ') || n.includes('more') || n.includes('daha')){
+        handleInternal('crew:more');
         return;
       }
+      if (n.includes('воду') || n.includes('water') || n.includes('su')) return handleInternal('crew:water');
+      if (n.includes('подуш') || n.includes('pillow') || n.includes('yast')) return handleInternal('crew:pillow');
+      if (n.includes('ужин') || n.includes('dinner') || n.includes('akşam')) return handleInternal('crew:dinner');
+      if ((n.includes('детск') && n.includes('меню')) || n.includes('kids menu') || n.includes('çocuk') || n.includes('cocuk')) return handleInternal('crew:kids');
 
-      // fallback
-      state.step = 'crewPick';
-      aeroSay('Что передать бортпроводнику?', chipsCrew);
+      // If in crew flow and in done step, show done/more
+      if (state.step === 'crewDone') return errorPickFromList(t().crew.after);
+      errorPickFromList(t().crew.options);
     }
 
-    // ===== Main: send =====
+    // =========================
+    // Main input handler
+    // =========================
+    function handleUserInput(displayText, internalValue=null){
+      const text = (displayText || '').trim();
+      if (!text) return;
+
+      userSay(text);
+
+      // chips
+      if (internalValue){
+        if (!handleInternal(internalValue)) errorPickFromList();
+        return;
+      }
+
+      const intent = detectIntent(text);
+
+      // no active flow
+      if (!state.flow){
+        if (!intent){
+          errorPickFromList(t().mainMenu);
+          return;
+        }
+
+        if (intent.type === 'smalltalk'){
+          aeroSay(intent.kind === 'hello' ? t().smalltalk.hello : t().smalltalk.thanks, t().mainMenu);
+          return;
+        }
+
+        if (intent.type === 'start'){
+          startFlow(intent.flow);
+          return;
+        }
+
+        if (intent.type === 'internal'){
+          if (!handleInternal(intent.value)) errorPickFromList();
+          return;
+        }
+
+        if (intent.type === 'sleepStart'){
+          // if user says start without flow, just show sleep scenario
+          startFlow('sleep');
+          return;
+        }
+
+        errorPickFromList(t().mainMenu);
+        return;
+      }
+
+      // active flow: allow internal intents too
+      if (intent?.type === 'internal'){
+        if (handleInternal(intent.value)) return;
+      }
+      if (intent?.type === 'sleepStart' && state.flow === 'sleep'){
+        handleSleepText('start');
+        return;
+      }
+
+      switch(state.flow){
+        case 'watch': return handleWatchText(text);
+        case 'sleep': return handleSleepText(text);
+        case 'flyover': return handleFlyText();
+        case 'aircraft': return handleAircraftText(text);
+        case 'crew': return handleCrewText(text);
+        default:
+          resetFlow();
+          errorPickFromList(t().mainMenu);
+      }
+    }
+
+    // =========================
+    // Send
+    // =========================
     function send(){
       const text = inputEl.value.trim();
       if (!text) return;
       inputEl.value = '';
-      handleUserInput(text, false, null);
+      handleUserInput(text, null);
     }
+    sendEl.addEventListener('click', send);
+    inputEl.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') send(); });
 
-    // Also handle internal values from chips that are not routed above (watch refine, flyover shortcut, crew done)
-    document.addEventListener('click', (e) => {
-      // noop - chips already bound per-message
-    });
+    // =========================
+    // Quick buttons
+    // =========================
+    crewBtnFixedEl.addEventListener('click', ()=> startFlow('crew'));
 
-    // Override processInternal for a few extra internal values
-    const _processInternal = processInternal;
-    processInternal = function(value, displayText){
-      // watch refine internals
-      if (value === 'watch:lighter' || value === 'watch:harder' || value === 'watch:genre'){
-        handleWatchInternal(value);
-        return;
-      }
-      // crew done/more
-      if (value === 'crew:more' && state.activeFlow === 'crew'){
-        state.step = 'crewPick';
-        aeroSay('Что передать бортпроводнику?', chipsCrew);
-        return;
-      }
-      if (value === 'crew:done' && state.activeFlow === 'crew'){
-        aeroSay('Хорошо.');
-        resetFlow();
-        return;
-      }
-      // flyover shortcuts
-      if (value === 'fly:20'){ handleFlyoverText('20 минут'); return; }
-      if (value === 'fly:045'){ handleFlyoverText('0:45'); return; }
-      if (value === 'fly:110'){ handleFlyoverText('1:10'); return; }
-
-      _processInternal(value, displayText);
+    // =========================
+    // Voice note recording (MediaRecorder)
+    // =========================
+    const recorder = {
+      supported: !!(navigator.mediaDevices && window.MediaRecorder),
+      recording: false,
+      mediaRecorder: null,
+      chunks: [],
+      stream: null
     };
 
-    sendEl.addEventListener('click', send);
-    inputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') send();
-    });
+    async function startRecording(){
+      if (!recorder.supported){
+        aeroSay(t().voice.noSupport);
+        return;
+      }
+      try{
+        recorder.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder.chunks = [];
+        recorder.mediaRecorder = new MediaRecorder(recorder.stream);
 
-    window.addEventListener('load', () => {
+        recorder.mediaRecorder.ondataavailable = (e)=>{ if (e.data && e.data.size > 0) recorder.chunks.push(e.data); };
+        recorder.mediaRecorder.onstop = ()=>{
+          const blob = new Blob(recorder.chunks, { type: recorder.mediaRecorder.mimeType || 'audio/webm' });
+          const url = URL.createObjectURL(blob);
+          addAudioMessage(url);
+          aeroSay(t().voice.gotVoice, t().mainMenu);
+
+          if (recorder.stream) recorder.stream.getTracks().forEach(tr=>tr.stop());
+          recorder.stream = null;
+          recorder.mediaRecorder = null;
+          recorder.chunks = [];
+        };
+
+        recorder.mediaRecorder.start();
+        recorder.recording = true;
+
+        voiceBtnEl.classList.add('voice-on');
+        voiceBtnEl.innerHTML = t().quick.voiceStop;
+        aeroSay(t().voice.recording);
+      } catch(e){
+        aeroSay(t().voice.micFail);
+      }
+    }
+
+    function stopRecording(){
+      if (!recorder.recording) return;
+      recorder.recording = false;
+      try{ recorder.mediaRecorder.stop(); } catch(e) {}
+      voiceBtnEl.classList.remove('voice-on');
+      voiceBtnEl.innerHTML = t().quick.voice;
+    }
+
+    voiceBtnEl.addEventListener('click', ()=>{ if (!recorder.recording) startRecording(); else stopRecording(); });
+
+    // =========================
+    // Apply static texts
+    // =========================
+    function applyStaticTexts(){
+      titleH1.textContent = t().appTitle;
+      document.title = t().appTitle;
+
+      emptyHintEl.textContent = t().emptyHint;
+      inputEl.placeholder = t().placeholder;
+
+      drawerTitle.textContent = t().drawerTitle;
+      navAerofriend.textContent = t().nav.aerofriend.name;
+      navAerofriendSub.textContent = t().nav.aerofriend.sub;
+      navEntertainment.textContent = t().nav.entertainment.name;
+      navEntertainmentSub.textContent = t().nav.entertainment.sub;
+      navMap3d.textContent = t().nav.map3d.name;
+      navMap3dSub.textContent = t().nav.map3d.sub;
+      langTitle.textContent = t().langTitle;
+
+      sheetTitle.textContent = t().sheetTitle;
+      sheetSubtitle.textContent = t().sheetSubtitle;
+
+      actWatchName.textContent = t().actions.watchName;
+      actWatchDesc.textContent = t().actions.watchDesc;
+      actSleepName.textContent = t().actions.sleepName;
+      actSleepDesc.textContent = t().actions.sleepDesc;
+      actFlyName.textContent = t().actions.flyName;
+      actFlyDesc.textContent = t().actions.flyDesc;
+      actAirName.textContent = t().actions.airName;
+      actAirDesc.textContent = t().actions.airDesc;
+
+      crewBtnFixedEl.innerHTML = `<strong>${t().quick.crew}</strong>`;
+      if (!recorder.recording){
+        voiceBtnEl.innerHTML = t().quick.voice;
+      } else {
+        voiceBtnEl.innerHTML = t().quick.voiceStop;
+      }
+    }
+
+    // =========================
+    // Init
+    // =========================
+    window.addEventListener('load', ()=>{
+      // Default lang buttons
+      document.querySelectorAll('.langBtn').forEach(b=>{
+        b.classList.toggle('active', b.getAttribute('data-lang') === LANG);
+      });
+      applyStaticTexts();
       inputEl.focus();
       messagesEl.scrollTop = messagesEl.scrollHeight;
     });
 
-    window.addEventListener('resize', () => {
-      requestAnimationFrame(() => {
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      });
-    });
+    // =========================
+    // Popup close
+    // =========================
+    // (already wired above)
+
   </script>
 </body>
 </html>
+
+
+
 
 
 
