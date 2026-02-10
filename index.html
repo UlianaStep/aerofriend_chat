@@ -286,24 +286,25 @@
     }
     .sheet-title h2{
       margin:0;
-      font-size: 16px;
-      font-weight: 800;
+      font-size: 28px;
+      font-weight: 900;
       letter-spacing:.2px;
+      color:#fff;
     }
     .sheet-title p{
-      margin:4px 0 0;
-      color: rgba(255,255,255,.72);
-      font-size: 13px;
-      line-height: 1.3;
+      margin:6px 0 0;
+      color: rgba(255,255,255,.78);
+      font-size: 18px;
+      line-height: 1.25;
     }
     .sheet-close{
-      width:40px;height:40px;
-      border-radius: 14px;
+      width:52px;height:52px;
+      border-radius: 18px;
       border: 1px solid rgba(255,255,255,.16);
       background: rgba(255,255,255,.08);
-      color: rgba(255,255,255,.9);
+      color: rgba(255,255,255,.92);
       cursor:pointer;
-      font-size: 22px;
+      font-size: 30px;
       line-height: 1;
       display:grid;
       place-items:center;
@@ -312,65 +313,60 @@
     .actions{
       display:grid;
       grid-template-columns: 1fr;
-      gap:10px;
-      margin-top: 6px;
+      gap:12px;
+      margin-top: 10px;
     }
 
+    /* ВАЖНО: text color = white + кликабельна вся плашка */
     .action-card{
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.08);
-      border-radius: 18px;
-      padding: 12px 12px;
+      width:100%;
+      text-align:left;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.10);
+      border-radius: 22px;
+      padding: 16px 16px;
       cursor:pointer;
       display:flex;
       align-items:center;
-      justify-content:space-between;
       gap:12px;
+      color:#fff;
     }
     .action-card:active{ transform: translateY(1px); }
 
     .action-main{
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:6px;
       min-width:0;
     }
     .action-name{
-      font-weight: 800;
-      font-size: 15px;
+      font-weight: 900;
+      font-size: 22px;
+      line-height: 1.1;
+      color:#fff;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
     .action-desc{
-      font-size: 13px;
-      color: rgba(255,255,255,.72);
-      line-height: 1.25;
-    }
-    .action-go{
-      flex:0 0 auto;
-      width:36px;height:36px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.08);
-      display:grid;
-      place-items:center;
-      color: rgba(255,255,255,.9);
       font-size: 18px;
+      color: rgba(255,255,255,.78);
+      line-height: 1.2;
     }
 
     .crew-btn{
-      margin-top: 10px;
+      margin-top: 14px;
       width:100%;
       border:none;
-      border-radius: 18px;
+      border-radius: 22px;
       background: var(--bubble-user);
       color:#fff;
       font-weight: 900;
       letter-spacing:.2px;
-      padding: 14px 14px;
+      padding: 18px 14px;
       cursor:pointer;
       box-shadow: 0 14px 28px rgba(0,0,0,.22);
+      font-size: 22px;
     }
     .crew-btn:active{ transform: translateY(1px); }
 
@@ -382,16 +378,16 @@
       }
       .bubble{ max-width: 62%; }
       .titlebar h1{ font-size: 44px; }
-
-      .sheet{
-        left: 0;
-        right: 0;
-      }
+      .sheet{ left: 0; right: 0; }
     }
 
     @media (max-width: 360px){
       .titlebar h1{ font-size: 36px; }
       .bubble{ font-size: 15px; }
+      .sheet-title h2{ font-size: 22px; }
+      .sheet-title p, .action-desc{ font-size: 15px; }
+      .action-name{ font-size: 18px; }
+      .crew-btn{ font-size: 18px; }
     }
   </style>
 </head>
@@ -400,12 +396,10 @@
   <div class="app">
 
     <header>
-      <!-- ИКОНКА БУРГЕРА (уже прописано вашим путём) -->
       <button class="icon-btn" type="button" aria-label="Меню">
         <img src="Icon/Burger-menu.svg" alt="" />
       </button>
 
-      <!-- ЛОГОТИП (уже прописано вашим путём) -->
       <div class="brand" aria-label="Aeroflot">
         <img src="Logo/CMYK.svg" alt="AEROFLOT" />
       </div>
@@ -424,7 +418,7 @@
 
       <!-- Overlay + Sheet -->
       <div id="overlay" class="overlay" aria-hidden="true">
-        <div class="sheet" role="dialog" aria-label="Подсказки">
+        <div class="sheet" role="dialog" aria-label="Что сделать в полёте">
           <div class="sheet-title">
             <div>
               <h2>Что сделать в полёте</h2>
@@ -439,7 +433,6 @@
                 <div class="action-name">🎬 Подборка на этот рейс</div>
                 <div class="action-desc">Фильм или сериал под длительность полёта и вкус.</div>
               </div>
-              <div class="action-go">›</div>
             </button>
 
             <button class="action-card" type="button" data-action="sleep">
@@ -447,15 +440,13 @@
                 <div class="action-name">🌙 Мягко уснуть</div>
                 <div class="action-desc">Дыхание, расслабление и “выключение головы”.</div>
               </div>
-              <div class="action-go">›</div>
             </button>
 
             <button class="action-card" type="button" data-action="flyover">
               <div class="action-main">
                 <div class="action-name">🗺️ Что мы пролетаем</div>
-                <div class="action-desc">Подскажу ориентиры по маршруту (демо-режим).</div>
+                <div class="action-desc">Подскажу ориентиры по маршруту.</div>
               </div>
-              <div class="action-go">›</div>
             </button>
 
             <button class="action-card" type="button" data-action="aircraft">
@@ -463,11 +454,9 @@
                 <div class="action-name">✈️ Интересное о самолёте</div>
                 <div class="action-desc">Факты про полёт, высоту, скорость и системы.</div>
               </div>
-              <div class="action-go">›</div>
             </button>
           </div>
 
-          <!-- ОТДЕЛЬНАЯ КНОПКА -->
           <button id="crewBtn" class="crew-btn" type="button">
             Связь с бортпроводником
           </button>
@@ -475,14 +464,12 @@
       </div>
 
       <div class="composer">
-        <!-- ПЛЮС (уже прописано вашим путём) -->
         <button id="plus" class="plus" type="button" aria-label="Сценарии">
           <img src="Icon/Plus.svg" alt="" />
         </button>
 
         <input id="input" class="input" type="text" placeholder="Спроси меня" autocomplete="off" />
 
-        <!-- ОТПРАВКА (уже прописано вашим путём) -->
         <button id="send" class="send" type="button" aria-label="Отправить">
           <img src="Icon/TextButton/arrow-up_20x20.svg" alt="" />
         </button>
@@ -502,22 +489,12 @@
     const closeSheetEl = document.getElementById('closeSheet');
     const crewBtnEl = document.getElementById('crewBtn');
 
-    // ====== Внутреннее состояние диалогов ======
-    // activeFlow: null | 'watch' | 'sleep' | 'flyover' | 'aircraft' | 'crew'
+    // ====== Состояние диалогов ======
     let state = {
-      activeFlow: null,
+      activeFlow: null,  // null | 'watch' | 'sleep' | 'flyover' | 'aircraft' | 'crew'
       step: null,
       data: {}
     };
-
-    // Стиль "Аэродруга": коротко, спокойно, уточняющие вопросы, без лишнего.
-    function aeroSay(text, chips){
-      addMessage({from:'bot', text, chips});
-    }
-
-    function userSay(text){
-      addMessage({from:'user', text});
-    }
 
     function hideEmptyHint(){
       if (emptyHintEl) emptyHintEl.style.display = 'none';
@@ -549,7 +526,6 @@
           b.type = 'button';
           b.textContent = c.label;
           b.addEventListener('click', () => {
-            // Чип = как будто пользователь отправил сообщение
             handleUserInput(c.value, true);
           });
           chipsWrap.appendChild(b);
@@ -562,6 +538,10 @@
         messagesEl.scrollTop = messagesEl.scrollHeight;
       });
     }
+
+    // Стиль "Аэродруга": коротко, спокойно, по делу.
+    function aeroSay(text, chips){ addMessage({from:'bot', text, chips}); }
+    function userSay(text){ addMessage({from:'user', text}); }
 
     function openSheet(){
       overlayEl.classList.add('open');
@@ -576,14 +556,12 @@
       if (overlayEl.classList.contains('open')) closeSheet();
       else openSheet();
     });
-
     closeSheetEl.addEventListener('click', closeSheet);
     overlayEl.addEventListener('click', (e) => {
-      // закрываем по клику на затемнение
       if (e.target === overlayEl) closeSheet();
     });
 
-    // ====== Сценарии из всплывашки ======
+    // ====== Старт сценариев ======
     overlayEl.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
         const action = btn.getAttribute('data-action');
@@ -591,12 +569,279 @@
         startFlow(action);
       });
     });
-
     crewBtnEl.addEventListener('click', () => {
       closeSheet();
       startFlow('crew');
     });
 
+    function normalize(s){
+      return (s || '').toLowerCase().replace(/ё/g,'е').trim();
+    }
+
+    // --- Что посмотреть: заранее зашитые конечные варианты ---
+    // Важно: это именно “готовые ответы”, до которых пользователь может дойти.
+    const watchLibrary = {
+      // bucket: short (<=90), mid (90-160), long (>=160) — условно
+      short: {
+        comedy: {
+          film: [
+            '«The Grand Budapest Hotel» — динамично и визуально.',
+            '«Palm Springs» — лёгкая фантастическая комедия.',
+            '«Paddington» — добрый вариант “для отдыха”.'
+          ],
+          series: [
+            '«The Office» (US) — 2–3 серии по 20–25 минут.',
+            '«Modern Family» — быстрые короткие эпизоды.',
+            '«Brooklyn Nine-Nine» — лёгкий юмор, можно кусочками.'
+          ]
+        },
+        detective: {
+          film: [
+            '«Knives Out» — лёгкий детектив с темпом.',
+            '«Sherlock Holmes» (2009) — приключенческий детектив.',
+            '«The Girl with the Dragon Tattoo» — мрачнее, но цепляет.'
+          ],
+          series: [
+            '«Sherlock» — 1 серия (как фильм).',
+            '«Only Murders in the Building» — 2–3 серии.',
+            '«True Detective» — лучше начать, если готовы к мрачному тону.'
+          ]
+        },
+        drama: {
+          film: [
+            '«Whiplash» — сильная энергия и короткий хронометраж.',
+            '«The Truman Show» — лёгкая философия.',
+            '«Little Miss Sunshine» — тёплая дорога-история.'
+          ],
+          series: [
+            '«The Bear» — 2–3 серии, держит внимание.',
+            '«Fleabag» — коротко и точно.',
+            '«Chernobyl» — только если готовы к тяжёлой теме.'
+          ]
+        },
+        scifi: {
+          film: [
+            '«Source Code» — компактный sci-fi триллер.',
+            '«Edge of Tomorrow» — экшен с идеей.',
+            '«Her» — спокойная фантастика.'
+          ],
+          series: [
+            '«Black Mirror» — 1 самостоятельная серия.',
+            '«Love, Death & Robots» — мини-эпизоды.',
+            '«Stranger Things» — начать 1–2 серии.'
+          ]
+        }
+      },
+      mid: {
+        comedy: {
+          film: [
+            '«The Intern» — ровно и доброжелательно.',
+            '«Free Guy» — лёгкий экшен-юмор.',
+            '«Chef» — комфортный фильм.'
+          ],
+          series: [
+            '«Ted Lasso» — 2–4 серии.',
+            '«Friends» — небольшой “пакет” серий.',
+            '«How I Met Your Mother» — 3–5 серий.'
+          ]
+        },
+        detective: {
+          film: [
+            '«Prisoners» — напряжённый детектив.',
+            '«Zodiac» — расследование и атмосфера.',
+            '«Gone Girl» — сюжетные повороты.'
+          ],
+          series: [
+            '«Mindhunter» — 2–3 серии размеренно.',
+            '«Mare of Easttown» — 2 серии (если нравится драма-детектив).',
+            '«Broadchurch» — 2–3 серии.'
+          ]
+        },
+        drama: {
+          film: [
+            '«The Social Network» — динамичная драма.',
+            '«Arrival» — мягкая фантастика-драма.',
+            '«La La Land» — если хочется музыкальности.'
+          ],
+          series: [
+            '«The Queen’s Gambit» — 1–2 серии, затягивает.',
+            '«Severance» — 2 серии, интрига.',
+            '«The Crown» — 1–2 серии спокойного темпа.'
+          ]
+        },
+        scifi: {
+          film: [
+            '«Interstellar» — только если не против длинного (можно частями).',
+            '«Ex Machina» — камерная фантастика.',
+            '«The Martian» — комфортный sci-fi.'
+          ],
+          series: [
+            '«The Expanse» — 2–3 серии.',
+            '«Dark» — 1–2 серии (внимательно!).',
+            '«Westworld» (S1) — 1–2 серии.'
+          ]
+        }
+      },
+      long: {
+        comedy: {
+          film: [
+            '«The Wolf of Wall Street» — долго, но летит быстро (18+).',
+            '«Forrest Gump» — большая история.',
+            '«The Big Lebowski» + короткий эпизод сериала (комбо).'
+          ],
+          series: [
+            'Мини-марафон «The Office» / «Modern Family» — 6–8 серий.',
+            '«Ted Lasso» — 5–6 серий.',
+            '«Brooklyn Nine-Nine» — 7–9 серий.'
+          ]
+        },
+        detective: {
+          film: [
+            '«The Irishman» — если нравится размеренно и долго.',
+            '«The Godfather» (I) — классика на длинный перелёт.',
+            'Комбо: «Knives Out» + 2 серии «Only Murders…».'
+          ],
+          series: [
+            '«True Detective» — 4–5 серий (мрачно).',
+            '«Broadchurch» — 5–6 серий.',
+            '«Mindhunter» — 4–5 серий.'
+          ]
+        },
+        drama: {
+          film: [
+            '«Oppenheimer» — концентрированная драма.',
+            '«Dune» (2021) — масштаб и темп.',
+            'Комбо: «Arrival» + 2 серии «The Bear».'
+          ],
+          series: [
+            '«Chernobyl» — 4–5 серий (тяжёлая тема).',
+            '«The Crown» — 4–5 серий.',
+            '«Severance» — 4–5 серий.'
+          ]
+        },
+        scifi: {
+          film: [
+            '«Interstellar» — идеально “на длинно”.',
+            '«Dune» — масштабная фантастика.',
+            'Комбо: «The Martian» + 1 серия «Black Mirror».'
+          ],
+          series: [
+            '«The Expanse» — 5–6 серий.',
+            '«Dark» — 4 серии (если готовы держать сюжет).',
+            '«Westworld» — 4–5 серий.'
+          ]
+        }
+      }
+    };
+
+    function parseDuration(text){
+      const t = normalize(text);
+
+      if (t.startsWith('~')) return t;
+      const hm = t.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
+      if (hm){
+        const h = parseInt(hm[1],10);
+        const m = parseInt(hm[2],10);
+        if (!isNaN(h) && !isNaN(m)) return (h*60 + m);
+      }
+      const min = t.match(/(\d{1,4})\s*(мин|м)\b/);
+      if (min){
+        const m = parseInt(min[1],10);
+        if (!isNaN(m)) return m;
+      }
+      const hr = t.match(/(\d{1,2})([.,]\d)?\s*(ч|час)/);
+      if (hr){
+        const h = parseInt(hr[1],10);
+        if (!isNaN(h)) return (h*60);
+      }
+      return null;
+    }
+
+    function durationToBucket(d){
+      // d может быть: number (minutes) или строка ~категория
+      if (typeof d === 'string'){
+        if (d.includes('~1ч')) return 'short';
+        if (d.includes('~1-2')) return 'short';
+        if (d.includes('~2-4')) return 'mid';
+        if (d.includes('~4+')) return 'long';
+        return 'mid';
+      }
+      if (typeof d === 'number'){
+        if (d <= 90) return 'short';
+        if (d <= 160) return 'mid';
+        return 'long';
+      }
+      return 'mid';
+    }
+
+    function genreToKey(g){
+      const t = normalize(g);
+      if (t.includes('комед')) return 'comedy';
+      if (t.includes('детект') || t.includes('трил')) return 'detective';
+      if (t.includes('драм')) return 'drama';
+      if (t.includes('фантаст') || t.includes('sci') || t.includes('фэнт')) return 'scifi';
+      // default
+      return 'comedy';
+    }
+
+    function formatToKey(f){
+      const t = normalize(f);
+      if (t.includes('сериал') || t.includes('мини') || t.includes('эпиз')) return 'series';
+      return 'film';
+    }
+
+    function buildWatchResult(bucket, genreKey, formatKey){
+      const list = watchLibrary[bucket][genreKey][formatKey] || [];
+      const header =
+        `Вариант на этот перелёт (${bucket === 'short' ? 'короткий' : bucket === 'mid' ? 'средний' : 'длинный'} слот):`;
+      return header + '\n• ' + list.join('\n• ');
+    }
+
+    // ====== Flyover: Казань → Москва, несколько городов по маршруту ======
+    // Условные ориентиры: Чебоксары/Йошкар-Ола/Нижний Новгород/Владимир/Москва, Волга и Ока.
+    function parseMinutesLoose(text){
+      const t = normalize(text);
+      const hm = t.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
+      if (hm){
+        const h = parseInt(hm[1],10);
+        const m = parseInt(hm[2],10);
+        if (!isNaN(h) && !isNaN(m)) return (h*60 + m);
+      }
+      const min = t.match(/(\d{1,4})\s*(мин|м)\b/);
+      if (min){
+        const m = parseInt(min[1],10);
+        if (!isNaN(m)) return m;
+      }
+      const hr = t.match(/(\d{1,2})\s*(ч|час)/);
+      if (hr){
+        const h = parseInt(hr[1],10);
+        if (!isNaN(h)) return h*60;
+      }
+      return null;
+    }
+
+    function flyoverAnswer(minutesFromTakeoff){
+      // Демо: грубые интервалы
+      if (minutesFromTakeoff == null){
+        return `Маршрут: Казань → Москва.\nЕсли скажете, сколько минут прошло с взлёта — подскажу, какие ориентиры обычно оказываются под крылом.`;
+      }
+
+      if (minutesFromTakeoff <= 15){
+        return `Казань → Москва.\nСейчас обычно ещё район Татарстана: можно увидеть изгибы Волги/Камы и поля.\nОриентиры: пригород Казани, крупные водные “ленты” и развязки.`;
+      }
+      if (minutesFromTakeoff <= 35){
+        return `Казань → Москва.\nЧасто в этом окне попадают районы Чувашии/Марий Эл.\nОриентиры: Чебоксары (если чуть южнее трассы), Йошкар-Ола (если севернее), широкая Волга.`;
+      }
+      if (minutesFromTakeoff <= 60){
+        return `Казань → Москва.\nСередина маршрута: часто “под крылом” районы Нижегородской области.\nОриентиры: Нижний Новгород, слияние Волги и Оки (очень заметная форма), крупные мосты/петли реки.`;
+      }
+      if (minutesFromTakeoff <= 85){
+        return `Казань → Москва.\nБлиже к финалу часто идут Владимирская/Московская области.\nОриентиры: Владимир, далее плотная сетка дорог и населённых пунктов, перед Москвой — “сплошной город”.`;
+      }
+      return `Казань → Москва.\nЕсли уже больше ~1:25 после взлёта, вероятно вы в зоне снижения к Москве.\nОриентиры: плотная застройка, кольцевые/магистрали, крупные водоёмы и река Москва.`;
+    }
+
+    // ====== Старт сценариев ======
     function startFlow(flow){
       state.activeFlow = flow;
       state.data = {};
@@ -606,7 +851,7 @@
         case 'watch':
           state.step = 'askDuration';
           aeroSay(
-            'Подберу что посмотреть. Сколько примерно лететь? Можно в минутах/часах (например: “2:30” или “150 минут”).',
+            'Подберу, что посмотреть. Сколько примерно лететь? Можно в формате “2:30” или “150 минут”.',
             [
               {label:'До 1 часа', value:'~1ч'},
               {label:'1–2 часа', value:'~1-2ч'},
@@ -619,7 +864,7 @@
         case 'sleep':
           state.step = 'sleepIntro';
           aeroSay(
-            'Сделаем короткую “посадку мозга”. Сколько времени есть?',
+            'Сделаем спокойный “спуск” в сон. Сколько времени есть?',
             [
               {label:'5 минут', value:'5'},
               {label:'10 минут', value:'10'},
@@ -629,16 +874,18 @@
           break;
 
         case 'flyover':
-          state.step = 'flyoverAskRoute';
+          state.step = 'flyoverAskTime';
+          // фиксируем маршрут сразу
+          state.data.route = 'Казань → Москва';
           aeroSay(
-            'Могу подсказать ориентиры, но это демо-режим без GPS. Напишите маршрут (откуда → куда) и примерное время с вылета.'
+            'Маршрут: Казань → Москва. Сколько прошло с взлёта? (например: “20 минут” или “0:45”)'
           );
           break;
 
         case 'aircraft':
           state.step = 'aircraftFact';
           aeroSay(
-            'Окей. Начну с короткого факта: на крейсерском режиме самолёт обычно летит на высоте порядка 10–12 км — это оптимально по расходу топлива и погоде.',
+            'Короткий факт: на крейсерском режиме лайнер обычно летит на высоте около 10–12 км — это оптимально по расходу топлива и погоде.',
             [
               {label:'Ещё факт', value:'ещё'},
               {label:'Про скорость', value:'скорость'},
@@ -648,166 +895,68 @@
           break;
 
         case 'crew':
-          state.step = 'crewConfirm';
-          aeroSay(
-            'Связь с бортпроводником — в демо это имитация. Если это реальный запрос (помощь/плохое самочувствие/вопрос по сервису), лучше нажать кнопку вызова над креслом.\n\nСмоделировать “вызов” здесь?',
-            [
-              {label:'Да, вызвать', value:'да'},
-              {label:'Нет', value:'нет'}
-            ]
-          );
-          break;
+          state.step = 'crewPick';
+            aeroSay(
+    'Что передать бортпроводнику?',
+    [
+      {label:'Принесите воду', value:'crew:water'},
+      {label:'Нужна подушка', value:'crew:pillow'},
+      {label:'Закажите ужин', value:'crew:dinner'},
+      {label:'Принесите детское меню', value:'crew:kids'}
+    ]
+  );
+  break;
       }
     }
 
-    // ====== Парсер и обработка пользовательского ввода ======
-    function normalize(s){
-      return (s || '').toLowerCase().replace(/ё/g,'е').trim();
-    }
-
-    function parseDuration(text){
-      // принимает ~1ч, ~1-2ч, ~2-4ч, ~4+ч, "2:30", "150 минут", "2 часа"
-      const t = normalize(text);
-
-      if (t.startsWith('~')){
-        return t; // грубая категория
-      }
-      // h:mm
-      const hm = t.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
-      if (hm){
-        const h = parseInt(hm[1],10);
-        const m = parseInt(hm[2],10);
-        if (!isNaN(h) && !isNaN(m)) return (h*60 + m) + 'м';
-      }
-      // minutes
-      const min = t.match(/(\d{2,4})\s*(мин|м)\b/);
-      if (min){
-        const m = parseInt(min[1],10);
-        if (!isNaN(m)) return m + 'м';
-      }
-      // hours
-      const hr = t.match(/(\d{1,2})([.,]\d)?\s*(ч|час)/);
-      if (hr){
-        const h = parseInt(hr[1],10);
-        if (!isNaN(h)) return (h*60) + 'м';
-      }
-      return null;
-    }
-
-    function suggestWatchlist(durationTag, genre, format){
-      // демо-подборки (без брендов/каталогов авиакомпании), нейтрально
-      // выбираем “короткое/среднее/длинное”
-      let bucket = 'mid';
-      const t = durationTag || '';
-      if (t.includes('~1ч') || t.includes('60') || t.includes('~1-2ч')) bucket = 'short';
-      if (t.includes('~2-4ч') || (t.includes('м') && parseInt(t) >= 150)) bucket = 'mid';
-      if (t.includes('~4+ч') || (t.includes('м') && parseInt(t) >= 240)) bucket = 'long';
-
-      const packs = {
-        short: {
-          film: [
-            'Лёгкая комедия на 80–100 минут',
-            'Детективный триллер “на один присест”',
-            'Документалка на 60–90 минут'
-          ],
-          series: [
-            'Мини-сериал: 2–3 коротких эпизода',
-            'Один эпизод “пилот + следующий”',
-            'Антология: 1 самостоятельная серия'
-          ]
-        },
-        mid: {
-          film: [
-            'Приключенческий фильм ~110–130 минут',
-            'Драма с сильным сюжетом ~120 минут',
-            'Экшен ~115 минут без “провисаний”'
-          ],
-          series: [
-            'Сериал: 3–5 эпизодов по 30 минут',
-            'Сериал: 2–3 эпизода по 45 минут',
-            'Мини-детектив: 3 эпизода'
-          ]
-        },
-        long: {
-          film: [
-            'Большое кино 140–180 минут',
-            'Два фильма подряд: лёгкий + сюжетный',
-            'Док + художественный: “фактами закрепить”'
-          ],
-          series: [
-            'Сезонный марафон: 6–8 эпизодов по 30 минут',
-            '4–5 эпизодов по 45 минут',
-            'Мини-сериал: 5–6 серий'
-          ]
-        }
-      };
-
-      const key = (format === 'сериал') ? 'series' : 'film';
-      const base = packs[bucket][key];
-
-      // жанровая подстройка (минимальная)
-      const g = normalize(genre || '');
-      if (g.includes('комед')) base.unshift('Комедия с короткими сценами — хорошо заходит в полёте');
-      if (g.includes('фантаст') || g.includes('sci')) base.unshift('Фантастика/фэнтези: “погружение” легче переносит время');
-      if (g.includes('ужас') || g.includes('хоррор')) base.unshift('Хоррор: лучше, если не планируете сразу спать 🙂');
-      if (g.includes('док')) base.unshift('Документалка: отличный формат, если хочется “по делу”');
-
-      return base.slice(0,5);
-    }
-
-    function handleUserInput(text, fromChip=false){
+    // ====== Обработка ввода ======
+    function handleUserInput(text){
       const trimmed = (text || '').trim();
       if (!trimmed) return;
 
-      // показываем как сообщение пользователя только если это не "внутренний" вызов?
-      // чипы тоже считаем сообщением пользователя — так UX понятнее
       userSay(trimmed);
 
-      // если активного сценария нет — отвечаем общим тоном
+      // если сценарий не активен — общая маршрутизация
       if (!state.activeFlow){
         const t = normalize(trimmed);
-        if (t.includes('что посмотреть') || t.includes('посоветуй фильм') || t.includes('сериал')){
-          startFlow('watch');
-          return;
+        if (t.includes('посмотреть') || t.includes('фильм') || t.includes('сериал')){
+          startFlow('watch'); return;
         }
-        if (t.includes('уснуть') || t.includes('не могу уснуть') || t.includes('сон')){
-          startFlow('sleep');
-          return;
+        if (t.includes('уснуть') || t.includes('сон')){
+          startFlow('sleep'); return;
         }
-        if (t.includes('что пролетаем') || t.includes('где летим') || t.includes('над чем')){
-          startFlow('flyover');
-          return;
+        if (t.includes('пролетаем') || t.includes('где летим') || t.includes('над чем')){
+          startFlow('flyover'); return;
         }
         if (t.includes('самолет') || t.includes('самолёт') || t.includes('турбулент')){
-          startFlow('aircraft');
-          return;
+          startFlow('aircraft'); return;
         }
-        if (t.includes('бортпровод') || t.includes('помоги') && t.includes('плохо')){
-          startFlow('crew');
-          return;
+        if (t.includes('бортпровод') || t.includes('помощ') || t.includes('плохо')){
+          startFlow('crew'); return;
         }
 
         aeroSay(
-          'Я рядом на время полёта. Могу: подобрать фильм/сериал, помочь уснуть, рассказать что мы пролетаем (в демо), или дать факты о самолёте. Нажмите “+” для быстрых сценариев.'
+          'Я помогу в полёте. Нажмите “+” для быстрых сценариев или напишите: “что посмотреть / уснуть / что пролетаем / факты о самолёте”.'
         );
         return;
       }
 
-      // ====== FLOW: WATCH ======
+      // ===== FLOW: WATCH =====
       if (state.activeFlow === 'watch'){
         if (state.step === 'askDuration'){
-          const dur = parseDuration(trimmed);
-          state.data.duration = dur || trimmed;
-          state.step = 'askGenre';
+          const d = parseDuration(trimmed);
+          state.data.durationRaw = trimmed;
+          state.data.duration = (d !== null) ? d : trimmed;
+          state.data.bucket = durationToBucket(state.data.duration);
 
+          state.step = 'askGenre';
           aeroSay(
-            'Хорошо. Какой жанр нравится больше всего?',
+            'Окей. Какой жанр берём?',
             [
               {label:'Комедия', value:'комедия'},
-              {label:'Детектив', value:'детектив'},
+              {label:'Детектив/триллер', value:'детектив'},
               {label:'Драма', value:'драма'},
-              {label:'Фантастика', value:'фантастика'},
-              {label:'Документальное', value:'документальное'}
+              {label:'Фантастика', value:'фантастика'}
             ]
           );
           return;
@@ -815,8 +964,9 @@
 
         if (state.step === 'askGenre'){
           state.data.genre = trimmed;
-          state.step = 'askFormat';
+          state.data.genreKey = genreToKey(trimmed);
 
+          state.step = 'askFormat';
           aeroSay(
             'Формат: сериал или фильм?',
             [
@@ -828,16 +978,17 @@
         }
 
         if (state.step === 'askFormat'){
-          const fmt = normalize(trimmed).includes('сериал') ? 'сериал' : 'фильм';
-          state.data.format = fmt;
+          // фикс: принимаем и чипы, и свободный текст
+          state.data.format = trimmed;
+          state.data.formatKey = formatToKey(trimmed);
 
-          const list = suggestWatchlist(state.data.duration, state.data.genre, fmt);
+          const res = buildWatchResult(state.data.bucket, state.data.genreKey, state.data.formatKey);
+
           aeroSay(
-            `Под вас на ${state.data.duration || 'этот перелёт'}: \n• ${list.join('\n• ')}\n\nЕсли скажете “хочу полегче/пожёстче/поумнее” — уточню подборку.`,
+            res + '\n\nХотите “полегче” или “пожёстче”? Могу перекинуть на другой набор.',
             [
               {label:'Полегче', value:'полегче'},
               {label:'Пожёстче', value:'пожёстче'},
-              {label:'Поумнее', value:'поумнее'},
               {label:'Сменить жанр', value:'сменить жанр'}
             ]
           );
@@ -848,47 +999,60 @@
 
         if (state.step === 'refine'){
           const t = normalize(trimmed);
+
           if (t.includes('сменить')){
             state.step = 'askGenre';
-            aeroSay('Окей. Какой жанр берём теперь?', [
+            aeroSay('Окей. Какой жанр теперь?', [
               {label:'Комедия', value:'комедия'},
-              {label:'Детектив', value:'детектив'},
+              {label:'Детектив/триллер', value:'детектив'},
               {label:'Драма', value:'драма'},
-              {label:'Фантастика', value:'фантастика'},
-              {label:'Документальное', value:'документальное'}
+              {label:'Фантастика', value:'фантастика'}
             ]);
             return;
           }
-          aeroSay('Принято. Если хотите — назовите 2–3 любимых фильма/сериала, и я подстрою рекомендации точнее.');
-          // оставляем flow активным, но без жёсткого шага
-          state.step = 'open';
+
+          if (t.includes('полегч')){
+            // полегче = комедия по умолчанию
+            const res = buildWatchResult(state.data.bucket, 'comedy', state.data.formatKey);
+            aeroSay('Полегче — вот вариант:\n' + res);
+            return;
+          }
+
+          if (t.includes('пожест') || t.includes('пожёст')){
+            // пожёстче = детектив по умолчанию
+            const res = buildWatchResult(state.data.bucket, 'detective', state.data.formatKey);
+            aeroSay('Пожёстче — вот вариант:\n' + res);
+            return;
+          }
+
+          aeroSay('Понял. Если скажете “ещё 2 варианта” — подкину следующий набор.');
           return;
         }
 
-        aeroSay('Окей. Сформулируйте: “фильм/сериал + жанр + сколько лететь” — и я быстро подберу.');
+        aeroSay('Скажите: сколько лететь → жанр → сериал/фильм.');
         return;
       }
 
-      // ====== FLOW: SLEEP ======
+      // ===== FLOW: SLEEP =====
       if (state.activeFlow === 'sleep'){
         const t = normalize(trimmed);
 
         if (state.step === 'sleepIntro'){
-          if (t === '5' || t.includes('5')){
+          if (t.includes('5')){
             state.step = 'sleep5';
             aeroSay(
-              '5 минут. Поехали:\n1) Удобно сядьте, подбородок чуть вниз.\n2) Вдох 4 секунды — выдох 6 секунд. Повторите 8 циклов.\n3) На каждом выдохе “отпускайте” плечи и челюсть.\n\nСказать продолжение (ещё 2 минуты) или достаточно?',
+              '5 минут:\n1) Вдох 4 секунды.\n2) Выдох 6 секунд.\nПовторите 8 циклов.\n\nПлечи вниз, челюсть расслабить.\n\nПродолжить ещё 2 минуты?',
               [
-                {label:'Ещё 2 минуты', value:'еще'},
-                {label:'Достаточно', value:'достаточно'}
+                {label:'Да, ещё 2', value:'ещё'},
+                {label:'Нет, достаточно', value:'достаточно'}
               ]
             );
             return;
           }
-          if (t === '10' || t.includes('10')){
+          if (t.includes('10')){
             state.step = 'sleep10';
             aeroSay(
-              '10 минут. План:\n• 2 минуты дыхание 4–6\n• 3 минуты расслабление тела “сверху вниз”\n• 5 минут визуализация “тихий коридор”\n\nХотите “тихо и без текста” (только тайминг) или с подсказками?',
+              '10 минут:\n• 2 минуты дыхание 4–6\n• 3 минуты расслабление тела\n• 5 минут визуализация\n\nХотите “только тайминг” или “с подсказками”?',
               [
                 {label:'Только тайминг', value:'тайминг'},
                 {label:'С подсказками', value:'подсказки'}
@@ -897,10 +1061,10 @@
             return;
           }
           if (t.includes('совет') || t.includes('tips')){
-            state.step = 'sleepTips';
             aeroSay(
-              'Быстрые советы для сна в кресле:\n• Маска/капюшон + беруши\n• Плед под поясницу\n• Ноги чуть приподнять (сумка под ступни)\n• Не злоупотреблять кофе за 3–4 часа\n\nЕсли скажете, где сидите (у окна/проход) — дам пару лайфхаков под место.'
+              'Советы для сна:\n• Маска/беруши\n• Плед под поясницу\n• Сумка под ступни\n• Воду небольшими глотками\n\nЕсли вы у окна/прохода — скажите, подскажу позу.'
             );
+            state.activeFlow = null; state.step = null; state.data = {};
             return;
           }
 
@@ -913,34 +1077,29 @@
         }
 
         if (state.step === 'sleep5'){
-          if (t.includes('еще') || t.includes('ещё')){
+          if (t.includes('ещё')){
             aeroSay(
-              'Ещё 2 минуты:\n• На вдохе мысленно “считайте” до 4\n• На выдохе — до 8\nЕсли сбились — спокойно начните заново.\n\nГотово. Можно просто держать выдох длиннее вдоха — организм сам начнёт “гасить” возбуждение.'
+              'Ещё 2 минуты:\nВдох 4 — выдох 8.\nЕсли сбились — спокойно начните заново.\n\nГотово.'
             );
-            state.step = 'done';
+            state.activeFlow = null; state.step = null; state.data = {};
             return;
           }
-          if (t.includes('достаточно')){
-            aeroSay('Окей. Если мысли скачут — попробуйте мягко считать выдохи от 1 до 20 и снова с 1.');
-            state.step = 'done';
+          if (t.includes('достат')){
+            aeroSay('Окей. Если мысли мешают — считайте выдохи от 1 до 20 и снова с 1.');
+            state.activeFlow = null; state.step = null; state.data = {};
             return;
           }
-          aeroSay('Если хотите, напишите “ещё” или “достаточно”.');
+          aeroSay('Ответьте “ещё” или “достаточно”.');
           return;
         }
 
         if (state.step === 'sleep10'){
-          if (t.includes('тайминг')){
-            aeroSay('Тайминг: 2:00 дыхание 4–6 → 3:00 расслабление → 5:00 визуализация. Скажите “старт”, и я буду отмечать этапы сообщениями.');
+          if (t.includes('тайминг') || t.includes('подсказ')){
+            aeroSay('Скажите “старт”. Я проведу по этапам короткими сообщениями.');
             state.step = 'sleep10Start';
             return;
           }
-          if (t.includes('подсказ')){
-            aeroSay('Окей. Скажите “старт”. Я буду вести короткими подсказками, без лишнего текста.');
-            state.step = 'sleep10Start';
-            return;
-          }
-          aeroSay('Выберите: “только тайминг” или “с подсказками”.', [
+          aeroSay('Выберите “только тайминг” или “с подсказками”.', [
             {label:'Только тайминг', value:'тайминг'},
             {label:'С подсказками', value:'подсказки'}
           ]);
@@ -949,162 +1108,156 @@
 
         if (state.step === 'sleep10Start'){
           if (t.includes('старт')){
-            // упрощённо: без реального таймера (но можно добавить)
-            aeroSay('Старт. 2 минуты: вдох 4 — выдох 6. Я напишу “дальше”, когда переключаться.');
+            aeroSay('Старт. 2 минуты: вдох 4 — выдох 6.');
             setTimeout(() => aeroSay('Дальше. 3 минуты: расслабьте лоб → глаза → челюсть → плечи → руки.'), 2200);
-            setTimeout(() => aeroSay('Финал. 5 минут: представьте “тихий коридор”, каждый шаг — выдох.'), 4400);
-            setTimeout(() => aeroSay('Готово. Если хочется — повторите последний этап ещё 3–5 минут.'), 6600);
-            state.step = 'done';
+            setTimeout(() => aeroSay('Финал. 5 минут: визуализация “тихий коридор”, каждый шаг — выдох.'), 4400);
+            setTimeout(() => {
+              aeroSay('Готово. Если хочется — повторите финал ещё 3–5 минут.');
+              state.activeFlow = null; state.step = null; state.data = {};
+            }, 6600);
             return;
           }
           aeroSay('Напишите “старт”, когда будете готовы.');
           return;
         }
-
-        aeroSay('Если хотите — нажмите “+” и выберите другой сценарий, либо напишите, что мешает уснуть (шум/мысли/поза).');
-        return;
       }
 
-      // ====== FLOW: FLYOVER ======
+      // ===== FLOW: FLYOVER (KZN → MOW) =====
       if (state.activeFlow === 'flyover'){
-        if (state.step === 'flyoverAskRoute'){
-          state.data.route = trimmed;
-          state.step = 'flyoverAskTime';
-          aeroSay('Понял. А сколько примерно прошло с взлёта? (например: “20 минут”, “1:10”)');
-          return;
-        }
-
         if (state.step === 'flyoverAskTime'){
-          state.data.timeFromTakeoff = trimmed;
-          state.step = 'flyoverResult';
-
-          aeroSay(
-            `Демо-ответ (без реальных данных): по маршруту “${state.data.route}” через ${state.data.timeFromTakeoff} часто пролетают крупные населённые пункты и водоёмы на пересечении трассы.\n\nЕсли скажете: “мы летим севернее/южнее” или увидели что-то в иллюминатор — попробую сузить до 2–3 вариантов.`,
-            [
-              {label:'Я у окна', value:'я у окна'},
-              {label:'Вижу огни города', value:'вижу огни'},
-              {label:'Вижу воду', value:'вижу воду'},
-              {label:'Сменить маршрут', value:'сменить маршрут'}
-            ]
-          );
+          const mins = parseMinutesLoose(trimmed);
+          aeroSay(flyoverAnswer(mins), [
+            {label:'Прошло 20 минут', value:'20 минут'},
+            {label:'Прошло 45 минут', value:'0:45'},
+            {label:'Прошло 1:10', value:'1:10'}
+          ]);
+          // можно оставлять flow активным — пользователь может уточнять время
           return;
         }
-
-        if (state.step === 'flyoverResult'){
-          const t = normalize(trimmed);
-          if (t.includes('сменить')){
-            state.step = 'flyoverAskRoute';
-            aeroSay('Окей. Напишите новый маршрут (откуда → куда).');
-            return;
-          }
-          aeroSay('Принято. Для точного “что пролетаем” в реальности нужен доступ к данным полёта/карте. В демо могу только вести диалог и уточнения.');
-          return;
-        }
-
-        aeroSay('Напишите маршрут (откуда → куда).');
-        state.step = 'flyoverAskRoute';
-        return;
       }
 
-      // ====== FLOW: AIRCRAFT ======
+      // ===== FLOW: AIRCRAFT =====
       if (state.activeFlow === 'aircraft'){
         const t = normalize(trimmed);
-
         if (t.includes('ещё')){
           const facts = [
-            'Турбулентность чаще неприятна, чем опасна: самолёт рассчитан на большие нагрузки, а экипаж выбирает режим и высоту.',
-            'Крейсерская скорость у лайнеров обычно в районе ~800–900 км/ч (зависит от типа и условий).',
-            'В салон подаётся “условная высота” ниже реальной: давление поддерживают так, чтобы было комфортно дышать.',
-            'На эшелоне температура за бортом может быть около −50°C — поэтому важны обогрев и антиобледенение.'
+            'Турбулентность чаще неприятна, чем опасна: ремень — главное.',
+            'На эшелоне за бортом может быть около −50°C — поэтому есть системы обогрева и антиобледенения.',
+            'Плотность воздуха на высоте ниже — поэтому скорость и режимы выбирают очень точно.',
+            'При посадке шасси и закрылки помогают увеличить подъёмную силу и снизить скорость.'
           ];
           aeroSay(facts[Math.floor(Math.random()*facts.length)], [
-            {label:'Ещё факт', value:'ещё'},
-            {label:'Про турбулентность', value:'турбулентность'},
-            {label:'Про высоту', value:'высота'},
-            {label:'Закончить', value:'закончить'}
-          ]);
-          state.step = 'aircraftFact';
-          return;
-        }
-
-        if (t.includes('скорость')){
-          aeroSay('Про скорость: на крейсе лайнер держит режим, где расход топлива/время оптимальны. На скорость влияют ветер (встречный/попутный) и ограничения диспетчеров.', [
-            {label:'Ещё факт', value:'ещё'},
-            {label:'Про высоту', value:'высота'},
-            {label:'Про турбулентность', value:'турбулентность'}
-          ]);
-          return;
-        }
-
-        if (t.includes('турбул')){
-          aeroSay('Про турбулентность: пристёгнутый ремень — главное. Если трясёт, экипаж может менять эшелон, скорость и обходить зоны по метео/докладам.', [
-            {label:'Ещё факт', value:'ещё'},
-            {label:'Как выбрать место', value:'место'},
-            {label:'Закончить', value:'закончить'}
-          ]);
-          return;
-        }
-
-        if (t.includes('место')){
-          aeroSay('Если чувствительны к тряске, обычно комфортнее ближе к крылу — там меньше “рычаг” колебаний. У окна проще “зафиксировать” взгляд.', [
-            {label:'Ещё факт', value:'ещё'},
-            {label:'Закончить', value:'закончить'}
-          ]);
-          return;
-        }
-
-        if (t.includes('высот')){
-          aeroSay('Про высоту: на эшелоне воздух разрежен, поэтому двигатели и крыло работают в оптимальных условиях, а маршрут и высоты выбирают с учётом погоды и трафика.', [
             {label:'Ещё факт', value:'ещё'},
             {label:'Про скорость', value:'скорость'},
             {label:'Закончить', value:'закончить'}
           ]);
           return;
         }
-
+        if (t.includes('скорост')){
+          aeroSay('Крейсерская скорость у лайнеров обычно порядка 800–900 км/ч (зависит от типа и условий). Ветер может заметно “ускорять” или “тормозить” по земле.');
+          return;
+        }
+        if (t.includes('турбул')){
+          aeroSay('Если трясёт: ремень пристёгнут. Экипаж может менять эшелон/скорость и обходить зоны по погоде и докладам.');
+          return;
+        }
         if (t.includes('законч')){
-          aeroSay('Окей. Если захотите — нажмите “+” и выберите другой сценарий.');
-          state.activeFlow = null;
-          state.step = null;
-          state.data = {};
+          aeroSay('Окей. Нажмите “+” — там быстрые сценарии.');
+          state.activeFlow = null; state.step = null; state.data = {};
           return;
         }
-
-        aeroSay('Скажите “ещё”, или выберите тему: скорость/высота/турбулентность.');
+        aeroSay('Скажите “ещё”, или выберите тему: скорость / турбулентность / закончить.');
         return;
       }
 
-      // ====== FLOW: CREW ======
-      if (state.activeFlow === 'crew'){
-        const t = normalize(trimmed);
-        if (state.step === 'crewConfirm'){
-          if (t === 'да' || t.includes('вызвать') || t.includes('да,')){
-            state.step = 'crewDone';
-            aeroSay(
-              'Принято. В демо я отправляю “запрос”.\n\nЕсли это реальная ситуация: нажмите кнопку вызова над креслом и кратко сообщите, что нужно (вода/плед/помощь).'
-            );
-            state.activeFlow = null;
-            state.step = null;
-            state.data = {};
-            return;
-          }
-          if (t === 'нет'){
-            aeroSay('Окей. Если что-то изменится — лучше сразу используйте кнопку вызова над креслом.');
-            state.activeFlow = null;
-            state.step = null;
-            state.data = {};
-            return;
-          }
-          aeroSay('Ответьте “да” или “нет”.', [
-            {label:'Да, вызвать', value:'да'},
-            {label:'Нет', value:'нет'}
-          ]);
-          return;
-        }
-        aeroSay('Если нужно — напишите “связь”, и я повторю инструкцию.');
-        return;
-      }
+      // ===== FLOW: CREW =====
+if (state.activeFlow === 'crew'){
+  if (state.step === 'crewPick'){
+    const t = normalize(trimmed);
+
+    // Поддержка чипов (crew:...) и свободного текста
+    let choice = null;
+
+    if (t.includes('crew:water') || t.includes('воду')) choice = 'water';
+    else if (t.includes('crew:pillow') || t.includes('подуш')) choice = 'pillow';
+    else if (t.includes('crew:dinner') || t.includes('ужин')) choice = 'dinner';
+    else if (t.includes('crew:kids') || t.includes('детск')) choice = 'kids';
+
+    if (!choice){
+      aeroSay(
+        'Выберите один вариант:',
+        [
+          {label:'Принесите воду', value:'crew:water'},
+          {label:'Нужна подушка', value:'crew:pillow'},
+          {label:'Закажите ужин', value:'crew:dinner'},
+          {label:'Принесите детское меню', value:'crew:kids'}
+        ]
+      );
+      return;
     }
+
+    const map = {
+      water: 'Принесите воду',
+      pillow: 'Нужна подушка',
+      dinner: 'Закажите ужин',
+      kids: 'Принесите детское меню'
+    };
+
+    state.step = 'crewDone';
+
+    aeroSay(
+      `Принято: «${map[choice]}». Хотите добавить что-то ещё?`,
+      [
+        {label:'Ещё запрос', value:'ещё запрос'},
+        {label:'Готово', value:'готово'}
+      ]
+    );
+    return;
+  }
+
+  if (state.step === 'crewDone'){
+    const t = normalize(trimmed);
+    if (t.includes('еще') || t.includes('ещё')){
+      state.step = 'crewPick';
+      aeroSay(
+        'Что передать бортпроводнику?',
+        [
+          {label:'Принесите воду', value:'crew:water'},
+          {label:'Нужна подушка', value:'crew:pillow'},
+          {label:'Закажите ужин', value:'crew:dinner'},
+          {label:'Принесите детское меню', value:'crew:kids'}
+        ]
+      );
+      return;
+    }
+    if (t.includes('готов')){
+      aeroSay('Хорошо. Если потребуется — напишите, что нужно.');
+      state.activeFlow = null; state.step = null; state.data = {};
+      return;
+    }
+
+    aeroSay('Ответьте “ещё запрос” или “готово”.', [
+      {label:'Ещё запрос', value:'ещё запрос'},
+      {label:'Готово', value:'готово'}
+    ]);
+    return;
+  }
+
+  // fallback
+  state.step = 'crewPick';
+  aeroSay(
+    'Что передать бортпроводнику?',
+    [
+      {label:'Принесите воду', value:'crew:water'},
+      {label:'Нужна подушка', value:'crew:pillow'},
+      {label:'Закажите ужин', value:'crew:dinner'},
+      {label:'Принесите детское меню', value:'crew:kids'}
+    ]
+  );
+  return;
+}
+    }
+
 
     function send(){
       const text = inputEl.value.trim();
@@ -1131,5 +1284,6 @@
   </script>
 </body>
 </html>
+
 
 
