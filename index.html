@@ -7,12 +7,10 @@
 
   <style>
     :root{
-      /* Фон как в макете */
       --bgTop:#0b4f87;
       --bgMid:#083a6d;
       --bgBot:#062a55;
 
-      /* Токены UI */
       --text:#fff;
       --muted:rgba(255,255,255,.70);
 
@@ -26,6 +24,10 @@
 
       --btn-bg: rgba(255,255,255,.10);
       --btn-stroke: rgba(255,255,255,.18);
+
+      --overlay: rgba(0,0,0,.38);
+      --panel: rgba(7, 40, 80, .92);
+      --panel-stroke: rgba(255,255,255,.14);
 
       --radius:18px;
 
@@ -75,31 +77,13 @@
       cursor:pointer;
       padding:0;
     }
+    .icon-btn img{ width:22px;height:22px; object-fit:contain; display:block; }
 
-    /* Если используете <img> внутри кнопки */
-    .icon-btn img{
-      width:22px;height:22px;
-      object-fit:contain;
-      display:block;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    /* ЛОГОТИП: можно картинкой или svg */
-    .brand img{
-      height:22px;
-      width:auto;
-      display:block;
-    }
+    .brand{ display:flex; align-items:center; gap:10px; }
+    .brand img{ height:22px; width:auto; display:block; }
 
     /* ===== Title ===== */
-    .titlebar{
-      padding: 10px 20px 6px;
-    }
+    .titlebar{ padding: 10px 20px 6px; }
     .titlebar h1{
       margin:0;
       font-size: 40px;
@@ -115,6 +99,7 @@
       flex-direction:column;
       min-height:0;
       padding: 0 16px;
+      position:relative;
     }
 
     .messages{
@@ -131,13 +116,22 @@
       border-radius: 10px;
     }
 
+    .empty-hint{
+      margin: 18px 0 0;
+      padding: 14px 14px;
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.75);
+      line-height: 1.35;
+    }
+
     .msg{
       margin: 18px 0;
       display:flex;
       flex-direction:column;
       gap:6px;
     }
-
     .msg.bot{ align-items:flex-start; }
     .msg.user{ align-items:flex-end; }
 
@@ -173,6 +167,26 @@
       border-bottom-right-radius: 10px;
     }
 
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      padding: 0 6px;
+      margin-top: 4px;
+    }
+    .chip{
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.12);
+      user-select:none;
+    }
+    .chip:active{ transform: translateY(1px); }
+
     /* ===== Composer ===== */
     .composer{
       height: calc(var(--composer-h) + var(--safe-bottom));
@@ -180,6 +194,8 @@
       display:flex;
       align-items:center;
       gap:12px;
+      position:relative;
+      z-index:3;
     }
 
     .plus{
@@ -193,10 +209,7 @@
       cursor:pointer;
       padding:0;
     }
-    .plus img{
-      width:22px;height:22px;
-      display:block;
-    }
+    .plus img{ width:22px;height:22px; display:block; }
 
     .input{
       flex:1;
@@ -223,16 +236,145 @@
       cursor:pointer;
       padding:0;
     }
-    .send img{
-      width:22px;height:22px;
-      display:block;
-    }
+    .send img{ width:22px;height:22px; display:block; }
     .send:disabled{
       filter: grayscale(.35) brightness(.9);
       cursor:not-allowed;
     }
 
-    /* ===== Tablet landscape adaptation ===== */
+    /* ===== Quick Actions Popup ===== */
+    .overlay{
+      position:absolute;
+      inset:0;
+      background: var(--overlay);
+      backdrop-filter: blur(4px);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      z-index:10;
+    }
+    .overlay.open{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .sheet{
+      position:absolute;
+      left: 16px;
+      right: 16px;
+      bottom: calc(var(--composer-h) + 10px + var(--safe-bottom));
+      border-radius: 22px;
+      border: 1px solid var(--panel-stroke);
+      background: var(--panel);
+      box-shadow: 0 24px 60px rgba(0,0,0,.28);
+      padding: 14px;
+      transform: translateY(10px);
+      opacity:0;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+    .overlay.open .sheet{
+      transform: translateY(0);
+      opacity:1;
+    }
+
+    .sheet-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding: 4px 4px 10px;
+    }
+    .sheet-title h2{
+      margin:0;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing:.2px;
+    }
+    .sheet-title p{
+      margin:4px 0 0;
+      color: rgba(255,255,255,.72);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .sheet-close{
+      width:40px;height:40px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.9);
+      cursor:pointer;
+      font-size: 22px;
+      line-height: 1;
+      display:grid;
+      place-items:center;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top: 6px;
+    }
+
+    .action-card{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 12px 12px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .action-card:active{ transform: translateY(1px); }
+
+    .action-main{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .action-name{
+      font-weight: 800;
+      font-size: 15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .action-desc{
+      font-size: 13px;
+      color: rgba(255,255,255,.72);
+      line-height: 1.25;
+    }
+    .action-go{
+      flex:0 0 auto;
+      width:36px;height:36px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      display:grid;
+      place-items:center;
+      color: rgba(255,255,255,.9);
+      font-size: 18px;
+    }
+
+    .crew-btn{
+      margin-top: 10px;
+      width:100%;
+      border:none;
+      border-radius: 18px;
+      background: var(--bubble-user);
+      color:#fff;
+      font-weight: 900;
+      letter-spacing:.2px;
+      padding: 14px 14px;
+      cursor:pointer;
+      box-shadow: 0 14px 28px rgba(0,0,0,.22);
+    }
+    .crew-btn:active{ transform: translateY(1px); }
+
+    /* ===== Tablet landscape ===== */
     @media (min-width: 820px) and (orientation: landscape){
       .app{ align-items:center; }
       header,.titlebar,.chat,.composer{
@@ -240,6 +382,11 @@
       }
       .bubble{ max-width: 62%; }
       .titlebar h1{ font-size: 44px; }
+
+      .sheet{
+        left: 0;
+        right: 0;
+      }
     }
 
     @media (max-width: 360px){
@@ -253,14 +400,12 @@
   <div class="app">
 
     <header>
-      <!-- TODO: ИКОНКА БУРГЕРА
-           Вставьте ваш SVG/PNG вместо assets/icon-burger.svg -->
+      <!-- ИКОНКА БУРГЕРА (уже прописано вашим путём) -->
       <button class="icon-btn" type="button" aria-label="Меню">
         <img src="Icon/Burger-menu.svg" alt="" />
       </button>
 
-      <!-- TODO: ЛОГОТИП AEROFLOT
-           Вставьте ваш логотип вместо assets/aeroflot-logo.svg -->
+      <!-- ЛОГОТИП (уже прописано вашим путём) -->
       <div class="brand" aria-label="Aeroflot">
         <img src="Logo/CMYK.svg" alt="AEROFLOT" />
       </div>
@@ -272,29 +417,72 @@
 
     <main class="chat">
       <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
-        <!-- Пример стартовых сообщений как на макете -->
-        <div class="msg bot">
-          <div class="label">АЭРОДРУГ</div>
-          <div class="bubble">Привет, я Аэродруг, который будет с тобой во время полета</div>
+        <div id="emptyHint" class="empty-hint">
+          Нажмите «+» для сценариев или задайте вопрос — я помогу по ходу полёта.
         </div>
+      </div>
 
-        <div class="msg user">
-          <div class="label">Вы</div>
-          <div class="bubble">Привет, а что ты умеешь?</div>
+      <!-- Overlay + Sheet -->
+      <div id="overlay" class="overlay" aria-hidden="true">
+        <div class="sheet" role="dialog" aria-label="Подсказки">
+          <div class="sheet-title">
+            <div>
+              <h2>Что сделать в полёте</h2>
+              <p>Выберите сценарий — я задам пару вопросов и предложу вариант.</p>
+            </div>
+            <button id="closeSheet" class="sheet-close" type="button" aria-label="Закрыть">×</button>
+          </div>
+
+          <div class="actions">
+            <button class="action-card" type="button" data-action="watch">
+              <div class="action-main">
+                <div class="action-name">🎬 Подборка на этот рейс</div>
+                <div class="action-desc">Фильм или сериал под длительность полёта и вкус.</div>
+              </div>
+              <div class="action-go">›</div>
+            </button>
+
+            <button class="action-card" type="button" data-action="sleep">
+              <div class="action-main">
+                <div class="action-name">🌙 Мягко уснуть</div>
+                <div class="action-desc">Дыхание, расслабление и “выключение головы”.</div>
+              </div>
+              <div class="action-go">›</div>
+            </button>
+
+            <button class="action-card" type="button" data-action="flyover">
+              <div class="action-main">
+                <div class="action-name">🗺️ Что мы пролетаем</div>
+                <div class="action-desc">Подскажу ориентиры по маршруту (демо-режим).</div>
+              </div>
+              <div class="action-go">›</div>
+            </button>
+
+            <button class="action-card" type="button" data-action="aircraft">
+              <div class="action-main">
+                <div class="action-name">✈️ Интересное о самолёте</div>
+                <div class="action-desc">Факты про полёт, высоту, скорость и системы.</div>
+              </div>
+              <div class="action-go">›</div>
+            </button>
+          </div>
+
+          <!-- ОТДЕЛЬНАЯ КНОПКА -->
+          <button id="crewBtn" class="crew-btn" type="button">
+            Связь с бортпроводником
+          </button>
         </div>
       </div>
 
       <div class="composer">
-        <!-- TODO: ИКОНКА ПЛЮСА
-             Вставьте вашу иконку вместо assets/icon-plus.svg -->
-        <button class="plus" type="button" aria-label="Добавить">
+        <!-- ПЛЮС (уже прописано вашим путём) -->
+        <button id="plus" class="plus" type="button" aria-label="Сценарии">
           <img src="Icon/Plus.svg" alt="" />
         </button>
 
         <input id="input" class="input" type="text" placeholder="Спроси меня" autocomplete="off" />
 
-        <!-- TODO: ИКОНКА ОТПРАВКИ (стрелка вверх)
-             Вставьте вашу иконку вместо assets/icon-send-up.svg -->
+        <!-- ОТПРАВКА (уже прописано вашим путём) -->
         <button id="send" class="send" type="button" aria-label="Отправить">
           <img src="Icon/TextButton/arrow-up_20x20.svg" alt="" />
         </button>
@@ -305,41 +493,39 @@
 
   <script>
     const messagesEl = document.getElementById('messages');
+    const emptyHintEl = document.getElementById('emptyHint');
     const inputEl = document.getElementById('input');
     const sendEl = document.getElementById('send');
 
-    // Заготовленные ответы (демо)
-    const canned = [
-      {
-        keys: ['умеешь', 'что ты', 'помощь', 'возможн', 'можеш'],
-        answer:
-          'Я демо-помощник “Аэродруг”. Могу подсказать по багажу, регистрации, выбору места, переносам и возвратам. Напишите тему, и я отвечу по сценарию.'
-      },
-      {
-        keys: ['багаж', 'чемодан', 'ручн', 'вес', 'габарит'],
-        answer:
-          'По багажу всё зависит от тарифа и направления. Скажите маршрут и тариф (Эконом/Комфорт/Бизнес) — назову точные нормы.'
-      },
-      {
-        keys: ['регистрац', 'онлайн', 'check', 'чекин', 'посадочн'],
-        answer:
-          'Онлайн-регистрация обычно открывается за сутки до вылета и закрывается за несколько часов. Назовите рейс и дату — подскажу точное окно и шаги.'
-      }
-    ];
+    const plusEl = document.getElementById('plus');
+    const overlayEl = document.getElementById('overlay');
+    const closeSheetEl = document.getElementById('closeSheet');
+    const crewBtnEl = document.getElementById('crewBtn');
 
-    function normalize(s){
-      return (s || '').toLowerCase().replace(/ё/g,'е').trim();
+    // ====== Внутреннее состояние диалогов ======
+    // activeFlow: null | 'watch' | 'sleep' | 'flyover' | 'aircraft' | 'crew'
+    let state = {
+      activeFlow: null,
+      step: null,
+      data: {}
+    };
+
+    // Стиль "Аэродруга": коротко, спокойно, уточняющие вопросы, без лишнего.
+    function aeroSay(text, chips){
+      addMessage({from:'bot', text, chips});
     }
 
-    function pickAnswer(userText){
-      const t = normalize(userText);
-      for (const item of canned){
-        if (item.keys.some(k => t.includes(k))) return item.answer;
-      }
-      return 'Понял. Уточните тему: багаж, регистрация, места, перенос рейса или возврат?';
+    function userSay(text){
+      addMessage({from:'user', text});
     }
 
-    function addMessage({from, text}){
+    function hideEmptyHint(){
+      if (emptyHintEl) emptyHintEl.style.display = 'none';
+    }
+
+    function addMessage({from, text, chips}){
+      hideEmptyHint();
+
       const msg = document.createElement('div');
       msg.className = `msg ${from}`;
 
@@ -353,35 +539,578 @@
 
       msg.appendChild(label);
       msg.appendChild(bubble);
-      messagesEl.appendChild(msg);
 
+      if (Array.isArray(chips) && chips.length){
+        const chipsWrap = document.createElement('div');
+        chipsWrap.className = 'chips';
+        for (const c of chips){
+          const b = document.createElement('button');
+          b.className = 'chip';
+          b.type = 'button';
+          b.textContent = c.label;
+          b.addEventListener('click', () => {
+            // Чип = как будто пользователь отправил сообщение
+            handleUserInput(c.value, true);
+          });
+          chipsWrap.appendChild(b);
+        }
+        msg.appendChild(chipsWrap);
+      }
+
+      messagesEl.appendChild(msg);
       requestAnimationFrame(() => {
         messagesEl.scrollTop = messagesEl.scrollHeight;
       });
     }
 
-    let busy = false;
+    function openSheet(){
+      overlayEl.classList.add('open');
+      overlayEl.setAttribute('aria-hidden','false');
+    }
+    function closeSheet(){
+      overlayEl.classList.remove('open');
+      overlayEl.setAttribute('aria-hidden','true');
+    }
+
+    plusEl.addEventListener('click', () => {
+      if (overlayEl.classList.contains('open')) closeSheet();
+      else openSheet();
+    });
+
+    closeSheetEl.addEventListener('click', closeSheet);
+    overlayEl.addEventListener('click', (e) => {
+      // закрываем по клику на затемнение
+      if (e.target === overlayEl) closeSheet();
+    });
+
+    // ====== Сценарии из всплывашки ======
+    overlayEl.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.getAttribute('data-action');
+        closeSheet();
+        startFlow(action);
+      });
+    });
+
+    crewBtnEl.addEventListener('click', () => {
+      closeSheet();
+      startFlow('crew');
+    });
+
+    function startFlow(flow){
+      state.activeFlow = flow;
+      state.data = {};
+      state.step = null;
+
+      switch(flow){
+        case 'watch':
+          state.step = 'askDuration';
+          aeroSay(
+            'Подберу что посмотреть. Сколько примерно лететь? Можно в минутах/часах (например: “2:30” или “150 минут”).',
+            [
+              {label:'До 1 часа', value:'~1ч'},
+              {label:'1–2 часа', value:'~1-2ч'},
+              {label:'2–4 часа', value:'~2-4ч'},
+              {label:'Больше 4 часов', value:'~4+ч'}
+            ]
+          );
+          break;
+
+        case 'sleep':
+          state.step = 'sleepIntro';
+          aeroSay(
+            'Сделаем короткую “посадку мозга”. Сколько времени есть?',
+            [
+              {label:'5 минут', value:'5'},
+              {label:'10 минут', value:'10'},
+              {label:'Просто советы', value:'tips'}
+            ]
+          );
+          break;
+
+        case 'flyover':
+          state.step = 'flyoverAskRoute';
+          aeroSay(
+            'Могу подсказать ориентиры, но это демо-режим без GPS. Напишите маршрут (откуда → куда) и примерное время с вылета.'
+          );
+          break;
+
+        case 'aircraft':
+          state.step = 'aircraftFact';
+          aeroSay(
+            'Окей. Начну с короткого факта: на крейсерском режиме самолёт обычно летит на высоте порядка 10–12 км — это оптимально по расходу топлива и погоде.',
+            [
+              {label:'Ещё факт', value:'ещё'},
+              {label:'Про скорость', value:'скорость'},
+              {label:'Про турбулентность', value:'турбулентность'}
+            ]
+          );
+          break;
+
+        case 'crew':
+          state.step = 'crewConfirm';
+          aeroSay(
+            'Связь с бортпроводником — в демо это имитация. Если это реальный запрос (помощь/плохое самочувствие/вопрос по сервису), лучше нажать кнопку вызова над креслом.\n\nСмоделировать “вызов” здесь?',
+            [
+              {label:'Да, вызвать', value:'да'},
+              {label:'Нет', value:'нет'}
+            ]
+          );
+          break;
+      }
+    }
+
+    // ====== Парсер и обработка пользовательского ввода ======
+    function normalize(s){
+      return (s || '').toLowerCase().replace(/ё/g,'е').trim();
+    }
+
+    function parseDuration(text){
+      // принимает ~1ч, ~1-2ч, ~2-4ч, ~4+ч, "2:30", "150 минут", "2 часа"
+      const t = normalize(text);
+
+      if (t.startsWith('~')){
+        return t; // грубая категория
+      }
+      // h:mm
+      const hm = t.match(/^(\d{1,2})\s*:\s*(\d{1,2})$/);
+      if (hm){
+        const h = parseInt(hm[1],10);
+        const m = parseInt(hm[2],10);
+        if (!isNaN(h) && !isNaN(m)) return (h*60 + m) + 'м';
+      }
+      // minutes
+      const min = t.match(/(\d{2,4})\s*(мин|м)\b/);
+      if (min){
+        const m = parseInt(min[1],10);
+        if (!isNaN(m)) return m + 'м';
+      }
+      // hours
+      const hr = t.match(/(\d{1,2})([.,]\d)?\s*(ч|час)/);
+      if (hr){
+        const h = parseInt(hr[1],10);
+        if (!isNaN(h)) return (h*60) + 'м';
+      }
+      return null;
+    }
+
+    function suggestWatchlist(durationTag, genre, format){
+      // демо-подборки (без брендов/каталогов авиакомпании), нейтрально
+      // выбираем “короткое/среднее/длинное”
+      let bucket = 'mid';
+      const t = durationTag || '';
+      if (t.includes('~1ч') || t.includes('60') || t.includes('~1-2ч')) bucket = 'short';
+      if (t.includes('~2-4ч') || (t.includes('м') && parseInt(t) >= 150)) bucket = 'mid';
+      if (t.includes('~4+ч') || (t.includes('м') && parseInt(t) >= 240)) bucket = 'long';
+
+      const packs = {
+        short: {
+          film: [
+            'Лёгкая комедия на 80–100 минут',
+            'Детективный триллер “на один присест”',
+            'Документалка на 60–90 минут'
+          ],
+          series: [
+            'Мини-сериал: 2–3 коротких эпизода',
+            'Один эпизод “пилот + следующий”',
+            'Антология: 1 самостоятельная серия'
+          ]
+        },
+        mid: {
+          film: [
+            'Приключенческий фильм ~110–130 минут',
+            'Драма с сильным сюжетом ~120 минут',
+            'Экшен ~115 минут без “провисаний”'
+          ],
+          series: [
+            'Сериал: 3–5 эпизодов по 30 минут',
+            'Сериал: 2–3 эпизода по 45 минут',
+            'Мини-детектив: 3 эпизода'
+          ]
+        },
+        long: {
+          film: [
+            'Большое кино 140–180 минут',
+            'Два фильма подряд: лёгкий + сюжетный',
+            'Док + художественный: “фактами закрепить”'
+          ],
+          series: [
+            'Сезонный марафон: 6–8 эпизодов по 30 минут',
+            '4–5 эпизодов по 45 минут',
+            'Мини-сериал: 5–6 серий'
+          ]
+        }
+      };
+
+      const key = (format === 'сериал') ? 'series' : 'film';
+      const base = packs[bucket][key];
+
+      // жанровая подстройка (минимальная)
+      const g = normalize(genre || '');
+      if (g.includes('комед')) base.unshift('Комедия с короткими сценами — хорошо заходит в полёте');
+      if (g.includes('фантаст') || g.includes('sci')) base.unshift('Фантастика/фэнтези: “погружение” легче переносит время');
+      if (g.includes('ужас') || g.includes('хоррор')) base.unshift('Хоррор: лучше, если не планируете сразу спать 🙂');
+      if (g.includes('док')) base.unshift('Документалка: отличный формат, если хочется “по делу”');
+
+      return base.slice(0,5);
+    }
+
+    function handleUserInput(text, fromChip=false){
+      const trimmed = (text || '').trim();
+      if (!trimmed) return;
+
+      // показываем как сообщение пользователя только если это не "внутренний" вызов?
+      // чипы тоже считаем сообщением пользователя — так UX понятнее
+      userSay(trimmed);
+
+      // если активного сценария нет — отвечаем общим тоном
+      if (!state.activeFlow){
+        const t = normalize(trimmed);
+        if (t.includes('что посмотреть') || t.includes('посоветуй фильм') || t.includes('сериал')){
+          startFlow('watch');
+          return;
+        }
+        if (t.includes('уснуть') || t.includes('не могу уснуть') || t.includes('сон')){
+          startFlow('sleep');
+          return;
+        }
+        if (t.includes('что пролетаем') || t.includes('где летим') || t.includes('над чем')){
+          startFlow('flyover');
+          return;
+        }
+        if (t.includes('самолет') || t.includes('самолёт') || t.includes('турбулент')){
+          startFlow('aircraft');
+          return;
+        }
+        if (t.includes('бортпровод') || t.includes('помоги') && t.includes('плохо')){
+          startFlow('crew');
+          return;
+        }
+
+        aeroSay(
+          'Я рядом на время полёта. Могу: подобрать фильм/сериал, помочь уснуть, рассказать что мы пролетаем (в демо), или дать факты о самолёте. Нажмите “+” для быстрых сценариев.'
+        );
+        return;
+      }
+
+      // ====== FLOW: WATCH ======
+      if (state.activeFlow === 'watch'){
+        if (state.step === 'askDuration'){
+          const dur = parseDuration(trimmed);
+          state.data.duration = dur || trimmed;
+          state.step = 'askGenre';
+
+          aeroSay(
+            'Хорошо. Какой жанр нравится больше всего?',
+            [
+              {label:'Комедия', value:'комедия'},
+              {label:'Детектив', value:'детектив'},
+              {label:'Драма', value:'драма'},
+              {label:'Фантастика', value:'фантастика'},
+              {label:'Документальное', value:'документальное'}
+            ]
+          );
+          return;
+        }
+
+        if (state.step === 'askGenre'){
+          state.data.genre = trimmed;
+          state.step = 'askFormat';
+
+          aeroSay(
+            'Формат: сериал или фильм?',
+            [
+              {label:'Сериал', value:'сериал'},
+              {label:'Фильм', value:'фильм'}
+            ]
+          );
+          return;
+        }
+
+        if (state.step === 'askFormat'){
+          const fmt = normalize(trimmed).includes('сериал') ? 'сериал' : 'фильм';
+          state.data.format = fmt;
+
+          const list = suggestWatchlist(state.data.duration, state.data.genre, fmt);
+          aeroSay(
+            `Под вас на ${state.data.duration || 'этот перелёт'}: \n• ${list.join('\n• ')}\n\nЕсли скажете “хочу полегче/пожёстче/поумнее” — уточню подборку.`,
+            [
+              {label:'Полегче', value:'полегче'},
+              {label:'Пожёстче', value:'пожёстче'},
+              {label:'Поумнее', value:'поумнее'},
+              {label:'Сменить жанр', value:'сменить жанр'}
+            ]
+          );
+
+          state.step = 'refine';
+          return;
+        }
+
+        if (state.step === 'refine'){
+          const t = normalize(trimmed);
+          if (t.includes('сменить')){
+            state.step = 'askGenre';
+            aeroSay('Окей. Какой жанр берём теперь?', [
+              {label:'Комедия', value:'комедия'},
+              {label:'Детектив', value:'детектив'},
+              {label:'Драма', value:'драма'},
+              {label:'Фантастика', value:'фантастика'},
+              {label:'Документальное', value:'документальное'}
+            ]);
+            return;
+          }
+          aeroSay('Принято. Если хотите — назовите 2–3 любимых фильма/сериала, и я подстрою рекомендации точнее.');
+          // оставляем flow активным, но без жёсткого шага
+          state.step = 'open';
+          return;
+        }
+
+        aeroSay('Окей. Сформулируйте: “фильм/сериал + жанр + сколько лететь” — и я быстро подберу.');
+        return;
+      }
+
+      // ====== FLOW: SLEEP ======
+      if (state.activeFlow === 'sleep'){
+        const t = normalize(trimmed);
+
+        if (state.step === 'sleepIntro'){
+          if (t === '5' || t.includes('5')){
+            state.step = 'sleep5';
+            aeroSay(
+              '5 минут. Поехали:\n1) Удобно сядьте, подбородок чуть вниз.\n2) Вдох 4 секунды — выдох 6 секунд. Повторите 8 циклов.\n3) На каждом выдохе “отпускайте” плечи и челюсть.\n\nСказать продолжение (ещё 2 минуты) или достаточно?',
+              [
+                {label:'Ещё 2 минуты', value:'еще'},
+                {label:'Достаточно', value:'достаточно'}
+              ]
+            );
+            return;
+          }
+          if (t === '10' || t.includes('10')){
+            state.step = 'sleep10';
+            aeroSay(
+              '10 минут. План:\n• 2 минуты дыхание 4–6\n• 3 минуты расслабление тела “сверху вниз”\n• 5 минут визуализация “тихий коридор”\n\nХотите “тихо и без текста” (только тайминг) или с подсказками?',
+              [
+                {label:'Только тайминг', value:'тайминг'},
+                {label:'С подсказками', value:'подсказки'}
+              ]
+            );
+            return;
+          }
+          if (t.includes('совет') || t.includes('tips')){
+            state.step = 'sleepTips';
+            aeroSay(
+              'Быстрые советы для сна в кресле:\n• Маска/капюшон + беруши\n• Плед под поясницу\n• Ноги чуть приподнять (сумка под ступни)\n• Не злоупотреблять кофе за 3–4 часа\n\nЕсли скажете, где сидите (у окна/проход) — дам пару лайфхаков под место.'
+            );
+            return;
+          }
+
+          aeroSay('Выберите 5 минут, 10 минут или “просто советы”.', [
+            {label:'5 минут', value:'5'},
+            {label:'10 минут', value:'10'},
+            {label:'Просто советы', value:'tips'}
+          ]);
+          return;
+        }
+
+        if (state.step === 'sleep5'){
+          if (t.includes('еще') || t.includes('ещё')){
+            aeroSay(
+              'Ещё 2 минуты:\n• На вдохе мысленно “считайте” до 4\n• На выдохе — до 8\nЕсли сбились — спокойно начните заново.\n\nГотово. Можно просто держать выдох длиннее вдоха — организм сам начнёт “гасить” возбуждение.'
+            );
+            state.step = 'done';
+            return;
+          }
+          if (t.includes('достаточно')){
+            aeroSay('Окей. Если мысли скачут — попробуйте мягко считать выдохи от 1 до 20 и снова с 1.');
+            state.step = 'done';
+            return;
+          }
+          aeroSay('Если хотите, напишите “ещё” или “достаточно”.');
+          return;
+        }
+
+        if (state.step === 'sleep10'){
+          if (t.includes('тайминг')){
+            aeroSay('Тайминг: 2:00 дыхание 4–6 → 3:00 расслабление → 5:00 визуализация. Скажите “старт”, и я буду отмечать этапы сообщениями.');
+            state.step = 'sleep10Start';
+            return;
+          }
+          if (t.includes('подсказ')){
+            aeroSay('Окей. Скажите “старт”. Я буду вести короткими подсказками, без лишнего текста.');
+            state.step = 'sleep10Start';
+            return;
+          }
+          aeroSay('Выберите: “только тайминг” или “с подсказками”.', [
+            {label:'Только тайминг', value:'тайминг'},
+            {label:'С подсказками', value:'подсказки'}
+          ]);
+          return;
+        }
+
+        if (state.step === 'sleep10Start'){
+          if (t.includes('старт')){
+            // упрощённо: без реального таймера (но можно добавить)
+            aeroSay('Старт. 2 минуты: вдох 4 — выдох 6. Я напишу “дальше”, когда переключаться.');
+            setTimeout(() => aeroSay('Дальше. 3 минуты: расслабьте лоб → глаза → челюсть → плечи → руки.'), 2200);
+            setTimeout(() => aeroSay('Финал. 5 минут: представьте “тихий коридор”, каждый шаг — выдох.'), 4400);
+            setTimeout(() => aeroSay('Готово. Если хочется — повторите последний этап ещё 3–5 минут.'), 6600);
+            state.step = 'done';
+            return;
+          }
+          aeroSay('Напишите “старт”, когда будете готовы.');
+          return;
+        }
+
+        aeroSay('Если хотите — нажмите “+” и выберите другой сценарий, либо напишите, что мешает уснуть (шум/мысли/поза).');
+        return;
+      }
+
+      // ====== FLOW: FLYOVER ======
+      if (state.activeFlow === 'flyover'){
+        if (state.step === 'flyoverAskRoute'){
+          state.data.route = trimmed;
+          state.step = 'flyoverAskTime';
+          aeroSay('Понял. А сколько примерно прошло с взлёта? (например: “20 минут”, “1:10”)');
+          return;
+        }
+
+        if (state.step === 'flyoverAskTime'){
+          state.data.timeFromTakeoff = trimmed;
+          state.step = 'flyoverResult';
+
+          aeroSay(
+            `Демо-ответ (без реальных данных): по маршруту “${state.data.route}” через ${state.data.timeFromTakeoff} часто пролетают крупные населённые пункты и водоёмы на пересечении трассы.\n\nЕсли скажете: “мы летим севернее/южнее” или увидели что-то в иллюминатор — попробую сузить до 2–3 вариантов.`,
+            [
+              {label:'Я у окна', value:'я у окна'},
+              {label:'Вижу огни города', value:'вижу огни'},
+              {label:'Вижу воду', value:'вижу воду'},
+              {label:'Сменить маршрут', value:'сменить маршрут'}
+            ]
+          );
+          return;
+        }
+
+        if (state.step === 'flyoverResult'){
+          const t = normalize(trimmed);
+          if (t.includes('сменить')){
+            state.step = 'flyoverAskRoute';
+            aeroSay('Окей. Напишите новый маршрут (откуда → куда).');
+            return;
+          }
+          aeroSay('Принято. Для точного “что пролетаем” в реальности нужен доступ к данным полёта/карте. В демо могу только вести диалог и уточнения.');
+          return;
+        }
+
+        aeroSay('Напишите маршрут (откуда → куда).');
+        state.step = 'flyoverAskRoute';
+        return;
+      }
+
+      // ====== FLOW: AIRCRAFT ======
+      if (state.activeFlow === 'aircraft'){
+        const t = normalize(trimmed);
+
+        if (t.includes('ещё')){
+          const facts = [
+            'Турбулентность чаще неприятна, чем опасна: самолёт рассчитан на большие нагрузки, а экипаж выбирает режим и высоту.',
+            'Крейсерская скорость у лайнеров обычно в районе ~800–900 км/ч (зависит от типа и условий).',
+            'В салон подаётся “условная высота” ниже реальной: давление поддерживают так, чтобы было комфортно дышать.',
+            'На эшелоне температура за бортом может быть около −50°C — поэтому важны обогрев и антиобледенение.'
+          ];
+          aeroSay(facts[Math.floor(Math.random()*facts.length)], [
+            {label:'Ещё факт', value:'ещё'},
+            {label:'Про турбулентность', value:'турбулентность'},
+            {label:'Про высоту', value:'высота'},
+            {label:'Закончить', value:'закончить'}
+          ]);
+          state.step = 'aircraftFact';
+          return;
+        }
+
+        if (t.includes('скорость')){
+          aeroSay('Про скорость: на крейсе лайнер держит режим, где расход топлива/время оптимальны. На скорость влияют ветер (встречный/попутный) и ограничения диспетчеров.', [
+            {label:'Ещё факт', value:'ещё'},
+            {label:'Про высоту', value:'высота'},
+            {label:'Про турбулентность', value:'турбулентность'}
+          ]);
+          return;
+        }
+
+        if (t.includes('турбул')){
+          aeroSay('Про турбулентность: пристёгнутый ремень — главное. Если трясёт, экипаж может менять эшелон, скорость и обходить зоны по метео/докладам.', [
+            {label:'Ещё факт', value:'ещё'},
+            {label:'Как выбрать место', value:'место'},
+            {label:'Закончить', value:'закончить'}
+          ]);
+          return;
+        }
+
+        if (t.includes('место')){
+          aeroSay('Если чувствительны к тряске, обычно комфортнее ближе к крылу — там меньше “рычаг” колебаний. У окна проще “зафиксировать” взгляд.', [
+            {label:'Ещё факт', value:'ещё'},
+            {label:'Закончить', value:'закончить'}
+          ]);
+          return;
+        }
+
+        if (t.includes('высот')){
+          aeroSay('Про высоту: на эшелоне воздух разрежен, поэтому двигатели и крыло работают в оптимальных условиях, а маршрут и высоты выбирают с учётом погоды и трафика.', [
+            {label:'Ещё факт', value:'ещё'},
+            {label:'Про скорость', value:'скорость'},
+            {label:'Закончить', value:'закончить'}
+          ]);
+          return;
+        }
+
+        if (t.includes('законч')){
+          aeroSay('Окей. Если захотите — нажмите “+” и выберите другой сценарий.');
+          state.activeFlow = null;
+          state.step = null;
+          state.data = {};
+          return;
+        }
+
+        aeroSay('Скажите “ещё”, или выберите тему: скорость/высота/турбулентность.');
+        return;
+      }
+
+      // ====== FLOW: CREW ======
+      if (state.activeFlow === 'crew'){
+        const t = normalize(trimmed);
+        if (state.step === 'crewConfirm'){
+          if (t === 'да' || t.includes('вызвать') || t.includes('да,')){
+            state.step = 'crewDone';
+            aeroSay(
+              'Принято. В демо я отправляю “запрос”.\n\nЕсли это реальная ситуация: нажмите кнопку вызова над креслом и кратко сообщите, что нужно (вода/плед/помощь).'
+            );
+            state.activeFlow = null;
+            state.step = null;
+            state.data = {};
+            return;
+          }
+          if (t === 'нет'){
+            aeroSay('Окей. Если что-то изменится — лучше сразу используйте кнопку вызова над креслом.');
+            state.activeFlow = null;
+            state.step = null;
+            state.data = {};
+            return;
+          }
+          aeroSay('Ответьте “да” или “нет”.', [
+            {label:'Да, вызвать', value:'да'},
+            {label:'Нет', value:'нет'}
+          ]);
+          return;
+        }
+        aeroSay('Если нужно — напишите “связь”, и я повторю инструкцию.');
+        return;
+      }
+    }
 
     function send(){
       const text = inputEl.value.trim();
-      if (!text || busy) return;
-
-      addMessage({from:'user', text});
+      if (!text) return;
       inputEl.value = '';
-
-      busy = true;
-      sendEl.disabled = true;
-
-      const answer = pickAnswer(text);
-
-      // небольшая задержка как “ответ ИИ”
-      const delay = Math.min(900 + answer.length * 8, 1800);
-      setTimeout(() => {
-        addMessage({from:'bot', text: answer});
-        busy = false;
-        sendEl.disabled = false;
-        inputEl.focus();
-      }, delay);
+      handleUserInput(text);
     }
 
     sendEl.addEventListener('click', send);
@@ -402,4 +1131,5 @@
   </script>
 </body>
 </html>
+
 
