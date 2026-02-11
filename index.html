@@ -460,7 +460,6 @@
         </div>
       </div>
 
-      <!-- Buttons like in your example -->
       <div class="actionRow" aria-label="Быстрые кнопки">
         <button id="crewBtnFixed" class="actionBtn orange" type="button">Сообщение бортпроводнику</button>
         <button id="voiceBtn" class="actionBtn" type="button">Поговорить</button>
@@ -480,7 +479,6 @@
         </div>
       </div>
 
-      <!-- Scenarios sheet -->
       <div id="overlay" class="overlay" aria-hidden="true">
         <div class="sheet" role="dialog" aria-label="Что сделать в полёте">
           <div class="sheet-title">
@@ -495,28 +493,28 @@
             <button class="action-card" type="button" data-action="watch">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <div class="action-name">🎬 Подборка на этот рейс</div>
-                <div class="action-desc">Фильм или сериал под длительность полёта и вкус.</div>
+                <div class="action-desc">Фильм или сериал под вкус и время.</div>
               </div>
             </button>
 
             <button class="action-card" type="button" data-action="sleep">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <div class="action-name">🌙 Мягко уснуть</div>
-                <div class="action-desc">Дыхание, расслабление и “выключение головы”.</div>
+                <div class="action-desc">Дыхание и расслабление.</div>
               </div>
             </button>
 
             <button class="action-card" type="button" data-action="flyover">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <div class="action-name">🗺️ Маршрут и где мы</div>
-                <div class="action-desc">Города по маршруту и что под нами прямо сейчас.</div>
+                <div class="action-desc">Города по маршруту и что под нами.</div>
               </div>
             </button>
 
             <button class="action-card" type="button" data-action="aircraft">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <div class="action-name">✈️ Интересное о самолёте</div>
-                <div class="action-desc">Факты про полёт, высоту, скорость и турбулентность.</div>
+                <div class="action-desc">Скорость, высота, турбулентность.</div>
               </div>
             </button>
           </div>
@@ -525,7 +523,6 @@
     </main>
   </div>
 
-  <!-- Drawer -->
   <div id="drawerOverlay" class="drawerOverlay" aria-hidden="true">
     <aside class="drawer" role="dialog" aria-label="Навигация">
       <div class="drawerTop">
@@ -551,9 +548,9 @@
       <div class="drawerFooter">
         <div style="font-weight:900; letter-spacing:.2px;">Язык</div>
         <div class="langRow">
-          <button class="langBtn active" data-lang="ru">Русский</button>
-          <button class="langBtn" data-lang="en">English</button>
-          <button class="langBtn" data-lang="tr">Türkçe</button>
+          <button class="langBtn active" data-lang="ru" type="button">Русский</button>
+          <button class="langBtn" data-lang="en" type="button">English</button>
+          <button class="langBtn" data-lang="tr" type="button">Türkçe</button>
         </div>
       </div>
     </aside>
@@ -561,14 +558,11 @@
 
   <script>
     // =========================
-    // CONFIG: AI fallback via proxy
+    // CONFIG: AI fallback via proxy (если прокси не нужен — оставьте, просто не будет фолбэка)
     // =========================
-    const AI_PROXY_URL = "http://localhost:3000/api/chat";
-    const AI_MODEL = "gpt-4o-mini";
+    const AI_PROXY_URL = "http://localhost:3000/api/chat"; // ваш прокси
+    const AI_ENABLED = true;
 
-    // =========================
-    // Helpers / DOM
-    // =========================
     function normalize(s){ return (s||'').toLowerCase().replace(/ё/g,'е').trim(); }
 
     const messagesEl = document.getElementById('messages');
@@ -609,7 +603,6 @@
       if (Array.isArray(chips) && chips.length){
         const chipsWrap = document.createElement('div');
         chipsWrap.className = 'chips';
-
         for (const c of chips){
           const b = document.createElement('button');
           b.className = 'chip';
@@ -629,7 +622,7 @@
     function userSay(text){ addMessage({from:'user', text}); }
 
     // =========================
-    // “Ваши сценарии/шаги” (оставлены; fallback добавлен только в конце)
+    // Chips / сценарии
     // =========================
     const chipsMainMenu = [
       {label:'🎬 Подборка на рейс', value:'start:watch'},
@@ -639,11 +632,23 @@
       {label:'Сообщение бортпроводнику', value:'start:crew'}
     ];
 
+    const chipsDuration = [
+      {label:'До 1 часа', value:'dur:short'},
+      {label:'1–2 часа', value:'dur:mid'},
+      {label:'2–4 часа', value:'dur:long'},
+      {label:'Больше 4 часов', value:'dur:xl'}
+    ];
+
     const chipsGenre = [
       {label:'Комедия', value:'genre:comedy'},
       {label:'Детектив/триллер', value:'genre:detective'},
       {label:'Драма', value:'genre:drama'},
       {label:'Фантастика', value:'genre:scifi'}
+    ];
+
+    const chipsFormat = [
+      {label:'Сериал', value:'format:series'},
+      {label:'Фильм', value:'format:film'}
     ];
 
     const chipsCrew = [
@@ -661,21 +666,88 @@
       aeroSay('Простите, не понял, что вы имели ввиду. Пожалуйста выберите из списка', chips || chipsMainMenu);
     }
 
-    const state = { flow:null, step:null };
+    // =========================
+    // Watch library (простой офлайн список)
+    // =========================
+    const watchLibrary = {
+      comedy: {
+        film: ['The Grand Budapest Hotel','Palm Springs','Paddington'],
+        series: ['The Office (2–3 серии)','Modern Family (3–4 серии)','Brooklyn Nine-Nine (3–4 серии)']
+      },
+      detective: {
+        film: ['Knives Out','Sherlock Holmes (2009)','Gone Girl'],
+        series: ['Sherlock (1 серия)','Only Murders in the Building (2–3 серии)','Broadchurch (2 серии)']
+      },
+      drama: {
+        film: ['Whiplash','The Truman Show','Little Miss Sunshine'],
+        series: ['The Bear (2–3 серии)','Fleabag (3–4 серии)','The Queen’s Gambit (1 серия)']
+      },
+      scifi: {
+        film: ['Source Code','Edge of Tomorrow','Her'],
+        series: ['Black Mirror (1 серия)','Love, Death & Robots','Stranger Things (1–2 серии)']
+      }
+    };
 
-    function resetFlow(){ state.flow=null; state.step=null; }
+    function buildWatchPicks(genreKey, formatKey, durKey){
+      const g = watchLibrary[genreKey] || watchLibrary.comedy;
+      const arr = g[formatKey] || g.film;
+      const durLabel = ({
+        short:'до 1 часа',
+        mid:'1–2 часа',
+        long:'2–4 часа',
+        xl:'больше 4 часов'
+      })[durKey] || 'по времени';
+
+      return `Подборка (${durLabel}):\n• ${arr.join('\n• ')}`;
+    }
+
+    // =========================
+    // Маршрут Москва → Казань (последовательно “где мы”)
+    // =========================
+    const route = [
+      { over:"Москвой", info:"Москва — крупнейший город России, культурный и деловой центр." },
+      { over:"Владимиром", info:"Владимир — город Золотого кольца, известен белокаменными соборами." },
+      { over:"Нижним Новгородом", info:"Нижний Новгород — на слиянии Волги и Оки, знаменит кремлём и набережными." },
+      { over:"Чебоксарами", info:"Чебоксары — столица Чувашии на Волге, известна заливом и набережной." },
+      { over:"Казанью", info:"Казань — столица Татарстана; Кремль и Кул-Шариф — символы города." }
+    ];
+    let routeIdx = 0;
+    function flyNow(){
+      const p = route[Math.min(routeIdx, route.length-1)];
+      if (routeIdx < route.length-1) routeIdx++;
+      return `Мы над ${p.over}.\n${p.info}`;
+    }
+    function flyList(){
+      return `Маршрут:\n• Москва\n• Владимир\n• Нижний Новгород\n• Чебоксары\n• Казань`;
+    }
+
+    // =========================
+    // State machine
+    // =========================
+    const state = {
+      flow: null,    // null | watch | crew | sleep | flyover | aircraft
+      step: null,
+      watch: { dur:null, genre:null, format:null }
+    };
+
+    function resetFlow(){
+      state.flow = null;
+      state.step = null;
+      state.watch = { dur:null, genre:null, format:null };
+    }
 
     function startFlow(flow){
-      state.flow = flow; state.step = null;
+      state.flow = flow;
+      state.step = null;
 
+      if (flow === 'watch'){
+        state.step = 'dur';
+        aeroSay('Подберу, что посмотреть. Сколько примерно лететь?', chipsDuration);
+        return true;
+      }
       if (flow === 'crew'){
         state.step = 'crewPick';
         aeroSay('Что передать бортпроводнику?', chipsCrew);
-        return true;
-      }
-      if (flow === 'watch'){
-        state.step = 'askGenre';
-        aeroSay('Какой жанр хочется посмотреть?', chipsGenre);
         return true;
       }
       if (flow === 'sleep'){
@@ -696,7 +768,7 @@
       }
       if (flow === 'aircraft'){
         state.step = 'air';
-        aeroSay('Хотите факт про скорость или про турбулентность?', [
+        aeroSay('Про что рассказать?', [
           {label:'Про скорость', value:'air:speed'},
           {label:'Про турбулентность', value:'air:turb'}
         ]);
@@ -717,30 +789,15 @@
       return map[v] || null;
     }
 
-    // Простая “лестница” маршрута (пример; можно заменить на вашу реальную логику)
-    const route = [
-      { over:"Москвой", info:"Москва — крупнейший город России, культурный и деловой центр." },
-      { over:"Владимиром", info:"Владимир — город Золотого кольца, известен белокаменными соборами." },
-      { over:"Нижним Новгородом", info:"Нижний Новгород — на слиянии Волги и Оки, знаменит кремлём и набережными." },
-      { over:"Чебоксарами", info:"Чебоксары — столица Чувашии на Волге, известна заливом и набережной." },
-      { over:"Казанью", info:"Казань — столица Татарстана; Кремль и Кул-Шариф — символы города." }
-    ];
-    let routeIdx = 0;
-    function flyNow(){
-      const p = route[Math.min(routeIdx, route.length-1)];
-      if (routeIdx < route.length-1) routeIdx++;
-      return `Мы над ${p.over}.\n${p.info}`;
-    }
-    function flyList(){
-      return `Маршрут:\n• Москва\n• Владимир\n• Нижний Новгород\n• Чебоксары\n• Казань`;
-    }
-
+    // =========================
+    // Internal actions (chips)
+    // =========================
     function handleInternal(value){
       if (!value) return false;
 
       if (value.startsWith('start:')) return startFlow(value.split(':')[1]);
 
-      // crew – железно
+      // -------- crew --------
       if (value === 'crew:done'){ aeroSay('Хорошо.'); resetFlow(); return true; }
       if (value === 'crew:more'){ state.flow='crew'; state.step='crewPick'; aeroSay('Что передать бортпроводнику?', chipsCrew); return true; }
       if (value.startsWith('crew:')){
@@ -751,43 +808,63 @@
         return true;
       }
 
-      // watch
+      // -------- watch (ПОЧИНЕНО: без “полегче/пожёстче”, сразу выдаём подборку) --------
+      if (value.startsWith('dur:')){
+        if (state.flow !== 'watch' || state.step !== 'dur') return false;
+        state.watch.dur = value.split(':')[1];
+        state.step = 'genre';
+        aeroSay('Какой жанр хочется?', chipsGenre);
+        return true;
+      }
       if (value.startsWith('genre:')){
-        state.flow='watch'; state.step='format';
-        aeroSay('Сериал или фильм?', [
-          {label:'Сериал', value:'format:series'},
-          {label:'Фильм', value:'format:film'}
-        ]);
+        if (state.flow !== 'watch' || state.step !== 'genre') return false;
+        state.watch.genre = value.split(':')[1];
+        state.step = 'format';
+        aeroSay('Формат: сериал или фильм?', chipsFormat);
         return true;
       }
       if (value.startsWith('format:')){
-        aeroSay('Окей. Если хотите, скажите “пожёстче” или “полегче” — подстрою подборку.');
+        if (state.flow !== 'watch' || state.step !== 'format') return false;
+        state.watch.format = value.split(':')[1];
+
+        const picks = buildWatchPicks(state.watch.genre, state.watch.format, state.watch.dur);
+        aeroSay(picks, chipsMainMenu);
+
+        // ВАЖНО: закрываем сценарий, чтобы “до конца доходило”
         resetFlow();
         return true;
       }
 
-      // sleep
-      if (value === 'sleep:5'){ aeroSay('5 минут: вдох 4 — выдох 6. Повторите 8 циклов.'); resetFlow(); return true; }
-      if (value === 'sleep:10'){ aeroSay('10 минут: 2 мин дыхание + 3 мин расслабление + 5 мин визуализация.'); resetFlow(); return true; }
+      // -------- sleep --------
+      if (value === 'sleep:5'){ aeroSay('5 минут: вдох 4 — выдох 6. Повторите 8 циклов.', chipsMainMenu); resetFlow(); return true; }
+      if (value === 'sleep:10'){ aeroSay('10 минут: 2 мин дыхание + 3 мин расслабление + 5 мин визуализация.', chipsMainMenu); resetFlow(); return true; }
 
-      // flyover
+      // -------- flyover --------
       if (value === 'fly:list'){ aeroSay(flyList(), [{label:'Что мы пролетаем сейчас', value:'fly:now'}]); return true; }
       if (value === 'fly:now'){ aeroSay(flyNow(), [{label:'А где мы?', value:'fly:now'}, {label:'Маршрут', value:'fly:list'}]); return true; }
 
-      // aircraft
-      if (value === 'air:speed'){ aeroSay('Крейсерская скорость обычно 800–900 км/ч. Ветер влияет на скорость “по земле”.'); resetFlow(); return true; }
-      if (value === 'air:turb'){ aeroSay('Если трясёт — ремень пристёгнут. Экипаж может сменить эшелон и обойти зоны.'); resetFlow(); return true; }
+      // -------- aircraft --------
+      if (value === 'air:speed'){ aeroSay('Крейсерская скорость обычно 800–900 км/ч. Ветер влияет на скорость “по земле”.', chipsMainMenu); resetFlow(); return true; }
+      if (value === 'air:turb'){ aeroSay('Если трясёт — ремень пристёгнут. Экипаж может сменить эшелон и обойти зоны.', chipsMainMenu); resetFlow(); return true; }
 
       return false;
     }
 
+    // =========================
+    // Intent detection (текст/голос)
+    // =========================
     function detectIntent(text){
       const n = normalize(text);
 
       // smalltalk
       if (n.includes('привет') || n.includes('здрав')) return {type:'hello'};
 
-      // crew keywords
+      // watch triggers
+      if (n.includes('что посмотреть') || n.includes('хочу посмотреть') || (n.includes('посмотреть') && (n.includes('фильм') || n.includes('сериал')))){
+        return {type:'start', flow:'watch'};
+      }
+
+      // crew triggers
       if (n.includes('бортпровод') || n.includes('проводник')) return {type:'start', flow:'crew'};
       if (n.includes('воду')) return {type:'internal', value:'crew:water'};
       if (n.includes('подуш')) return {type:'internal', value:'crew:pillow'};
@@ -795,43 +872,49 @@
       if (n.includes('детск') && n.includes('меню')) return {type:'internal', value:'crew:kids'};
       if (n === 'готово' || n.includes('готов')) return {type:'internal', value:'crew:done'};
 
-      // watch
-      if (n.includes('хочу посмотреть') || (n.includes('посмотреть') && n.includes('фильм')) || n.includes('что посмотреть')) return {type:'start', flow:'watch'};
-      if (n.includes('детектив') || n.includes('трил')) return {type:'internal', value:'genre:detective'};
+      // fly triggers
+      if (n.includes('где мы') || n.includes('а где мы')) return {type:'internal', value:'fly:now'};
+      if (n.includes('маршрут') || n.includes('какие города')) return {type:'internal', value:'fly:list'};
+      if (n.includes('пролетаем')) return {type:'start', flow:'flyover'};
+
+      // sleep triggers
+      if (n.includes('уснуть') || n.includes('сон') || n.includes('засып')) return {type:'start', flow:'sleep'};
+
+      // aircraft triggers
+      if (n.includes('самолет') || n.includes('самолёт') || n.includes('турбул') || n.includes('скорост')) return {type:'start', flow:'aircraft'};
+
+      // watch “soft” genre triggers (помогает в сценарии)
       if (n.includes('комед')) return {type:'internal', value:'genre:comedy'};
+      if (n.includes('детектив') || n.includes('трил')) return {type:'internal', value:'genre:detective'};
       if (n.includes('драм')) return {type:'internal', value:'genre:drama'};
       if (n.includes('фантаст')) return {type:'internal', value:'genre:scifi'};
 
-      // fly
-      if (n.includes('где мы') || n.includes('а где мы')) return {type:'internal', value:'fly:now'};
-      if (n.includes('маршрут') || n.includes('какие города')) return {type:'internal', value:'fly:list'};
+      // format triggers
+      if (n === 'фильм' || n.includes('хочу фильм')) return {type:'internal', value:'format:film'};
+      if (n === 'сериал' || n.includes('хочу сериал')) return {type:'internal', value:'format:series'};
 
-      // sleep
-      if (n.includes('уснуть') || n.includes('сон') || n.includes('засып')) return {type:'start', flow:'sleep'};
-
-      // aircraft
-      if (n.includes('самолет') || n.includes('самолёт') || n.includes('турбул') || n.includes('скорост')) return {type:'start', flow:'aircraft'};
+      // duration triggers
+      if (n.includes('до 1') || n.includes('один час')) return {type:'internal', value:'dur:short'};
+      if (n.includes('1-2') || n.includes('1–2') || n.includes('два часа')) return {type:'internal', value:'dur:mid'};
+      if (n.includes('2-4') || n.includes('2–4') || n.includes('четыр')) return {type:'internal', value:'dur:long'};
+      if (n.includes('больше') || n.includes('4')) return {type:'internal', value:'dur:xl'};
 
       return null;
     }
 
     // =========================
-    // AI fallback (ONLY when scripts didn't handle)
+    // AI fallback (только если сценарии не сработали)
     // =========================
-    const convo = []; // {role, content} for AI context (lightweight)
+    const convo = [];
     function pushConvo(role, content){
       convo.push({ role, content });
-      if (convo.length > 18) convo.splice(0, convo.length - 18);
+      if (convo.length > 14) convo.splice(0, convo.length - 14);
     }
 
     async function callAIFallback(userText){
-      const system = [
-        "Ты — «Аэродруг», бортовой ассистент авиакомпании.",
-        "Отвечай коротко, спокойно, по делу.",
-        "Если пользователь просит то, что относится к сценариям (фильм/сон/где мы/самолёт/бортпроводник), можно подсказать использовать кнопки или задать 1 уточняющий вопрос.",
-        "Не упоминай слово «демо» и не говори, что ты имитация.",
-        "Язык ответа — русский."
-      ].join(" ");
+      const system =
+        "Ты — «Аэродруг», бортовой ассистент. Отвечай коротко, дружелюбно, по делу. " +
+        "Не упоминай про демо/имитацию. Если запрос лучше решается кнопками (фильм/сон/маршрут/самолёт/бортпроводник) — предложи нажать «+» или соответствующую кнопку.";
 
       const messages = [
         { role: "system", content: system },
@@ -842,34 +925,31 @@
       const r = await fetch(AI_PROXY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: AI_MODEL, messages })
+        body: JSON.stringify({ messages })
       });
 
       const data = await r.json();
-      return (data && data.text) ? String(data.text).trim() : "";
+      const text = (data && data.text) ? String(data.text).trim() : "";
+      return text;
     }
 
     // =========================
-    // Unified “utterance” handler:
-    // - runs scripts first
-    // - if not handled => AI fallback
+    // Unified utterance handler
     // =========================
     async function onUserUtterance(text, opts){
       const { internalValue = null, alreadyRenderedUser = false } = opts || {};
-
       const clean = (text || "").trim();
       if (!clean) return;
 
       if (!alreadyRenderedUser) userSay(clean);
       pushConvo("user", clean);
 
-      // 1) chip/internal
+      // 1) internal (chips)
       if (internalValue){
         const ok = handleInternal(internalValue);
         if (ok) return;
-        // если почему-то внутреннее не обработалось — идём в AI
       } else {
-        // 2) intent/scripts
+        // 2) intents/scripts
         const intent = detectIntent(clean);
 
         if (intent?.type === 'hello'){
@@ -889,18 +969,29 @@
           if (ok) return;
         }
 
-        // 3) active flow fallback rules (если вы хотите строгий “список”, можно оставить)
+        // 3) если активный сценарий и пользователь “мимо”
+        if (state.flow === 'watch'){
+          // в сценарии watch НЕ зовём AI — просим выбрать из списка
+          errorPickFromList(
+            state.step === 'dur' ? chipsDuration :
+            state.step === 'genre' ? chipsGenre :
+            state.step === 'format' ? chipsFormat :
+            chipsMainMenu
+          );
+          return;
+        }
         if (state.flow === 'crew'){
           errorPickFromList(state.step === 'crewDone' ? chipsCrewAfter : chipsCrew);
           return;
         }
-        if (state.flow === 'watch'){
-          errorPickFromList(chipsGenre);
-          return;
-        }
       }
 
-      // 4) No script matched => AI fallback
+      // 4) fallback AI
+      if (!AI_ENABLED){
+        errorPickFromList(chipsMainMenu);
+        return;
+      }
+
       aeroSay("Секунду…");
       try{
         const ai = await callAIFallback(clean);
@@ -916,7 +1007,7 @@
     }
 
     // =========================
-    // Send / typed input
+    // Send (text)
     // =========================
     function send(){
       const text = inputEl.value.trim();
@@ -951,11 +1042,11 @@
     drawerCloseEl.addEventListener('click', closeDrawer);
     drawerOverlayEl.addEventListener('click', (e)=>{ if (e.target === drawerOverlayEl) closeDrawer(); });
 
+    // Quick buttons
     crewBtnFixedEl.addEventListener('click', ()=> startFlow('crew'));
 
     // =========================
-    // Voice: continuous SpeechRecognition session
-    // - scripts first; if none => AI fallback
+    // Voice: continuous SpeechRecognition (start once until stop)
     // =========================
     const Voice = { supported:false, active:false, rec:null };
 
@@ -975,15 +1066,12 @@
         const last = event.results[event.results.length - 1];
         const transcript = (last && last[0] && last[0].transcript) ? last[0].transcript.trim() : "";
         if (!transcript) return;
-
-        // важное: user уже будет отрисован внутри onUserUtterance, поэтому передаём alreadyRenderedUser=false
         await onUserUtterance(transcript, { alreadyRenderedUser: false });
       };
 
       rec.onerror = () => { stopVoice(); };
 
       rec.onend = () => {
-        // держим сессию живой, пока активна
         if (Voice.active){
           try { rec.start(); } catch(e) {}
         }
@@ -999,7 +1087,7 @@
       voiceBtnEl.classList.add('voice-on');
       voiceBtnEl.textContent = 'Прекратить';
       try { Voice.rec.start(); } catch(e) {}
-      aeroSay('Голосовой режим включён. Говорите — я отвечу. (Остановить: “Прекратить”)', chipsMainMenu);
+      aeroSay('Голосовой режим включён. Говорите — я отвечу.', chipsMainMenu);
     }
 
     function stopVoice(){
@@ -1013,9 +1101,7 @@
 
     voiceBtnEl.addEventListener('click', ()=>{ if (!Voice.active) startVoice(); else stopVoice(); });
 
-    // =========================
     // Init
-    // =========================
     window.addEventListener('load', ()=>{
       inputEl.focus();
       setupVoice();
@@ -1023,6 +1109,7 @@
   </script>
 </body>
 </html>
+
 
 
 
