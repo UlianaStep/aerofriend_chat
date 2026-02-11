@@ -64,6 +64,17 @@
       z-index:2;
     }
 
+    .wrap{
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+
     .icon-btn{
       width:46px;height:46px;
       border-radius:16px;
@@ -428,17 +439,30 @@
     }
 
     @media (min-width: 820px) and (orientation: landscape){
-      .app{ align-items:center; }
-      header,.titlebar,.chat{ width: min(920px, 92vw); }
-      .bubble{ max-width: 62%; }
-      .titlebar h1{ font-size: 44px; }
-      .sheet{ left: 0; right: 0; }
-    }
+  .app{ align-items:stretch; } /* важно: не центруем весь app */
+
+  header{ width: 100%; }       /* шапка на всю ширину */
+  .titlebar, .chat{ width: 100%; } /* блоки на всю ширину */
+
+  /* контент внутри ограничим контейнером (см. пункт 2) */
+  .bubble{ max-width: 62%; }
+  .titlebar h1{ font-size: 44px; }
+
+  /* всплывашка пусть остаётся в безопасных отступах */
+  .sheet{
+    left: 16px;
+    right: 16px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+}
+
   </style>
 </head>
 
 <body>
   <div class="app">
+    <div class="wrap">
     <header>
       <button id="burger" class="icon-btn" type="button" aria-label="Меню">
         <img src="Icon/Burger-menu.svg" alt="" />
@@ -448,7 +472,7 @@
         <img src="Logo/CMYK.svg" alt="AEROFLOT" />
       </div>
     </header>
-
+    </div>
     <div class="titlebar">
       <h1 id="titleH1">Аэродруг</h1>
     </div>
