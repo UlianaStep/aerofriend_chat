@@ -194,7 +194,6 @@
       padding: 0 14px;
     }
     .actionBtn:active{ transform: translateY(1px); }
-
     .actionBtn.orange{
       background: var(--bubble-user);
       border-color: rgba(255,255,255,.12);
@@ -214,7 +213,6 @@
       display:flex;
       align-items:center;
       gap:12px;
-      padding: 0 0 0;
     }
     .plus{
       width:54px;height:54px;
@@ -273,7 +271,7 @@
       position:absolute;
       left: 16px;
       right: 16px;
-      bottom: calc(12px + 44px + 10px + 54px + 24px + var(--safe-bottom)); /* приблизительно над блоком */
+      bottom: calc(12px + 44px + 10px + 54px + 24px + var(--safe-bottom));
       border-radius: 22px;
       border: 1px solid var(--panel-stroke);
       background: var(--panel);
@@ -396,11 +394,6 @@
       border-radius: 18px;
       padding: 14px 14px;
       cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      color:#fff;
       user-select:none;
     }
     .navItem.active{
@@ -462,10 +455,12 @@
 
     <main class="chat">
       <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
-        <div id="emptyHint" class="empty-hint">Нажмите «+» для сценариев или задайте вопрос — я помогу по ходу полёта.</div>
+        <div id="emptyHint" class="empty-hint">
+          Нажмите «+» для сценариев или задайте вопрос — я помогу по ходу полёта.
+        </div>
       </div>
 
-      <!-- Action buttons like in your example -->
+      <!-- Buttons like in your example -->
       <div class="actionRow" aria-label="Быстрые кнопки">
         <button id="crewBtnFixed" class="actionBtn orange" type="button">Сообщение бортпроводнику</button>
         <button id="voiceBtn" class="actionBtn" type="button">Поговорить</button>
@@ -490,8 +485,8 @@
         <div class="sheet" role="dialog" aria-label="Что сделать в полёте">
           <div class="sheet-title">
             <div>
-              <h2 id="sheetTitle">Что сделать в полёте</h2>
-              <p id="sheetSubtitle">Выберите сценарий — я задам пару вопросов и предложу вариант.</p>
+              <h2>Что сделать в полёте</h2>
+              <p>Выберите сценарий — я задам пару вопросов и предложу вариант.</p>
             </div>
             <button id="closeSheet" class="sheet-close" type="button" aria-label="Закрыть">×</button>
           </div>
@@ -540,24 +535,16 @@
 
       <nav class="nav">
         <div class="navItem active" data-page="aerofriend">
-          <div>
-            <div class="name">Аэродруг</div>
-            <div class="sub">Чат-помощник в полёте</div>
-          </div>
+          <div class="name">Аэродруг</div>
+          <div class="sub">Чат-помощник в полёте</div>
         </div>
-
         <div class="navItem" data-page="entertainment">
-          <div>
-            <div class="name">Центр развлечений</div>
-            <div class="sub">Фильмы, музыка, игры</div>
-          </div>
+          <div class="name">Центр развлечений</div>
+          <div class="sub">Фильмы, музыка, игры</div>
         </div>
-
         <div class="navItem" data-page="map3d">
-          <div>
-            <div class="name">3D-карта</div>
-            <div class="sub">Маршрут в объёме</div>
-          </div>
+          <div class="name">3D-карта</div>
+          <div class="sub">Маршрут в объёме</div>
         </div>
       </nav>
 
@@ -574,7 +561,13 @@
 
   <script>
     // =========================
-    // Helpers
+    // CONFIG: AI fallback via proxy
+    // =========================
+    const AI_PROXY_URL = "http://localhost:3000/api/chat";
+    const AI_MODEL = "gpt-4o-mini";
+
+    // =========================
+    // Helpers / DOM
     // =========================
     function normalize(s){ return (s||'').toLowerCase().replace(/ё/g,'е').trim(); }
 
@@ -622,7 +615,7 @@
           b.className = 'chip';
           b.type = 'button';
           b.textContent = c.label;
-          b.addEventListener('click', () => handleUserInput(c.label, c.value));
+          b.addEventListener('click', () => onUserUtterance(c.label, { internalValue: c.value, alreadyRenderedUser: false }));
           chipsWrap.appendChild(b);
         }
         msg.appendChild(chipsWrap);
@@ -635,12 +628,8 @@
     function aeroSay(text, chips){ addMessage({from:'bot', text, chips}); }
     function userSay(text){ addMessage({from:'user', text}); }
 
-    function errorPickFromList(chips){
-      aeroSay('Простите, не понял, что вы имели ввиду. Пожалуйста выберите из списка', chips || chipsMainMenu);
-    }
-
     // =========================
-    // Scenario / minimal chips
+    // “Ваши сценарии/шаги” (оставлены; fallback добавлен только в конце)
     // =========================
     const chipsMainMenu = [
       {label:'🎬 Подборка на рейс', value:'start:watch'},
@@ -668,37 +657,54 @@
       {label:'Готово', value:'crew:done'}
     ];
 
-    // =========================
-    // State machine (kept minimal; main ask: voice demo + UI)
-    // =========================
-    const state = {
-      flow: null,   // null | watch | crew
-      step: null
-    };
-
-    function resetFlow(){
-      state.flow = null;
-      state.step = null;
+    function errorPickFromList(chips){
+      aeroSay('Простите, не понял, что вы имели ввиду. Пожалуйста выберите из списка', chips || chipsMainMenu);
     }
 
+    const state = { flow:null, step:null };
+
+    function resetFlow(){ state.flow=null; state.step=null; }
+
     function startFlow(flow){
-      state.flow = flow;
-      state.step = null;
+      state.flow = flow; state.step = null;
 
       if (flow === 'crew'){
         state.step = 'crewPick';
         aeroSay('Что передать бортпроводнику?', chipsCrew);
-        return;
+        return true;
       }
-
       if (flow === 'watch'){
         state.step = 'askGenre';
         aeroSay('Какой жанр хочется посмотреть?', chipsGenre);
-        return;
+        return true;
+      }
+      if (flow === 'sleep'){
+        state.step = 'sleep';
+        aeroSay('Хотите 5 минут или 10 минут?', [
+          {label:'5 минут', value:'sleep:5'},
+          {label:'10 минут', value:'sleep:10'}
+        ]);
+        return true;
+      }
+      if (flow === 'flyover'){
+        state.step = 'fly';
+        aeroSay('Хотите список городов по маршруту или где мы сейчас?', [
+          {label:'Какие города пролетаем', value:'fly:list'},
+          {label:'Что мы пролетаем сейчас', value:'fly:now'}
+        ]);
+        return true;
+      }
+      if (flow === 'aircraft'){
+        state.step = 'air';
+        aeroSay('Хотите факт про скорость или про турбулентность?', [
+          {label:'Про скорость', value:'air:speed'},
+          {label:'Про турбулентность', value:'air:turb'}
+        ]);
+        return true;
       }
 
       resetFlow();
-      errorPickFromList(chipsMainMenu);
+      return false;
     }
 
     function crewPhraseByValue(v){
@@ -711,56 +717,66 @@
       return map[v] || null;
     }
 
+    // Простая “лестница” маршрута (пример; можно заменить на вашу реальную логику)
+    const route = [
+      { over:"Москвой", info:"Москва — крупнейший город России, культурный и деловой центр." },
+      { over:"Владимиром", info:"Владимир — город Золотого кольца, известен белокаменными соборами." },
+      { over:"Нижним Новгородом", info:"Нижний Новгород — на слиянии Волги и Оки, знаменит кремлём и набережными." },
+      { over:"Чебоксарами", info:"Чебоксары — столица Чувашии на Волге, известна заливом и набережной." },
+      { over:"Казанью", info:"Казань — столица Татарстана; Кремль и Кул-Шариф — символы города." }
+    ];
+    let routeIdx = 0;
+    function flyNow(){
+      const p = route[Math.min(routeIdx, route.length-1)];
+      if (routeIdx < route.length-1) routeIdx++;
+      return `Мы над ${p.over}.\n${p.info}`;
+    }
+    function flyList(){
+      return `Маршрут:\n• Москва\n• Владимир\n• Нижний Новгород\n• Чебоксары\n• Казань`;
+    }
+
     function handleInternal(value){
       if (!value) return false;
 
-      if (value.startsWith('start:')){
-        startFlow(value.split(':')[1]);
-        return true;
-      }
+      if (value.startsWith('start:')) return startFlow(value.split(':')[1]);
 
-      // crew (железно)
-      if (value === 'crew:done'){
-        aeroSay('Хорошо.');
-        resetFlow();
-        return true;
-      }
-      if (value === 'crew:more'){
-        state.flow = 'crew';
-        state.step = 'crewPick';
-        aeroSay('Что передать бортпроводнику?', chipsCrew);
-        return true;
-      }
+      // crew – железно
+      if (value === 'crew:done'){ aeroSay('Хорошо.'); resetFlow(); return true; }
+      if (value === 'crew:more'){ state.flow='crew'; state.step='crewPick'; aeroSay('Что передать бортпроводнику?', chipsCrew); return true; }
       if (value.startsWith('crew:')){
-        state.flow = 'crew';
-        state.step = 'crewDone';
+        state.flow='crew'; state.step='crewDone';
         const phrase = crewPhraseByValue(value);
-        if (!phrase){
-          errorPickFromList(chipsCrew);
-          return true;
-        }
+        if (!phrase){ errorPickFromList(chipsCrew); return true; }
         aeroSay(`Принято: «${phrase}». Хотите добавить что-то ещё?`, chipsCrewAfter);
         return true;
       }
 
-      // watch genre (demo)
+      // watch
       if (value.startsWith('genre:')){
-        state.flow = 'watch';
-        state.step = 'done';
-        aeroSay('Понял. Сериал или фильм?', [
+        state.flow='watch'; state.step='format';
+        aeroSay('Сериал или фильм?', [
           {label:'Сериал', value:'format:series'},
           {label:'Фильм', value:'format:film'}
         ]);
         return true;
       }
-
       if (value.startsWith('format:')){
-        state.flow = 'watch';
-        state.step = 'done';
-        aeroSay('Окей. Если скажете “пожёстче” или “полегче” — подстрою рекомендации.');
+        aeroSay('Окей. Если хотите, скажите “пожёстче” или “полегче” — подстрою подборку.');
         resetFlow();
         return true;
       }
+
+      // sleep
+      if (value === 'sleep:5'){ aeroSay('5 минут: вдох 4 — выдох 6. Повторите 8 циклов.'); resetFlow(); return true; }
+      if (value === 'sleep:10'){ aeroSay('10 минут: 2 мин дыхание + 3 мин расслабление + 5 мин визуализация.'); resetFlow(); return true; }
+
+      // flyover
+      if (value === 'fly:list'){ aeroSay(flyList(), [{label:'Что мы пролетаем сейчас', value:'fly:now'}]); return true; }
+      if (value === 'fly:now'){ aeroSay(flyNow(), [{label:'А где мы?', value:'fly:now'}, {label:'Маршрут', value:'fly:list'}]); return true; }
+
+      // aircraft
+      if (value === 'air:speed'){ aeroSay('Крейсерская скорость обычно 800–900 км/ч. Ветер влияет на скорость “по земле”.'); resetFlow(); return true; }
+      if (value === 'air:turb'){ aeroSay('Если трясёт — ремень пристёгнут. Экипаж может сменить эшелон и обойти зоны.'); resetFlow(); return true; }
 
       return false;
     }
@@ -768,11 +784,10 @@
     function detectIntent(text){
       const n = normalize(text);
 
+      // smalltalk
       if (n.includes('привет') || n.includes('здрав')) return {type:'hello'};
-      if (n.includes('хочу посмотреть фильм') || n.includes('хочу посмотреть') || (n.includes('посмотреть') && n.includes('фильм'))){
-        return {type:'voiceWatchDemo'};
-      }
 
+      // crew keywords
       if (n.includes('бортпровод') || n.includes('проводник')) return {type:'start', flow:'crew'};
       if (n.includes('воду')) return {type:'internal', value:'crew:water'};
       if (n.includes('подуш')) return {type:'internal', value:'crew:pillow'};
@@ -780,87 +795,140 @@
       if (n.includes('детск') && n.includes('меню')) return {type:'internal', value:'crew:kids'};
       if (n === 'готово' || n.includes('готов')) return {type:'internal', value:'crew:done'};
 
+      // watch
+      if (n.includes('хочу посмотреть') || (n.includes('посмотреть') && n.includes('фильм')) || n.includes('что посмотреть')) return {type:'start', flow:'watch'};
+      if (n.includes('детектив') || n.includes('трил')) return {type:'internal', value:'genre:detective'};
+      if (n.includes('комед')) return {type:'internal', value:'genre:comedy'};
+      if (n.includes('драм')) return {type:'internal', value:'genre:drama'};
+      if (n.includes('фантаст')) return {type:'internal', value:'genre:scifi'};
+
+      // fly
+      if (n.includes('где мы') || n.includes('а где мы')) return {type:'internal', value:'fly:now'};
+      if (n.includes('маршрут') || n.includes('какие города')) return {type:'internal', value:'fly:list'};
+
+      // sleep
+      if (n.includes('уснуть') || n.includes('сон') || n.includes('засып')) return {type:'start', flow:'sleep'};
+
+      // aircraft
+      if (n.includes('самолет') || n.includes('самолёт') || n.includes('турбул') || n.includes('скорост')) return {type:'start', flow:'aircraft'};
+
       return null;
     }
 
-    function handleUserInput(displayText, internalValue=null){
-      const text = (displayText || '').trim();
-      if (!text) return;
+    // =========================
+    // AI fallback (ONLY when scripts didn't handle)
+    // =========================
+    const convo = []; // {role, content} for AI context (lightweight)
+    function pushConvo(role, content){
+      convo.push({ role, content });
+      if (convo.length > 18) convo.splice(0, convo.length - 18);
+    }
 
-      userSay(text);
+    async function callAIFallback(userText){
+      const system = [
+        "Ты — «Аэродруг», бортовой ассистент авиакомпании.",
+        "Отвечай коротко, спокойно, по делу.",
+        "Если пользователь просит то, что относится к сценариям (фильм/сон/где мы/самолёт/бортпроводник), можно подсказать использовать кнопки или задать 1 уточняющий вопрос.",
+        "Не упоминай слово «демо» и не говори, что ты имитация.",
+        "Язык ответа — русский."
+      ].join(" ");
 
-      if (internalValue){
-        if (!handleInternal(internalValue)) errorPickFromList();
-        return;
-      }
+      const messages = [
+        { role: "system", content: system },
+        ...convo,
+        { role: "user", content: userText }
+      ];
 
-      const intent = detectIntent(text);
+      const r = await fetch(AI_PROXY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: AI_MODEL, messages })
+      });
 
-      // voice-demo intents (works for typed too)
-      if (intent?.type === 'hello'){
-        aeroSay('Привет, чем тебе помочь?', chipsMainMenu);
-        return;
-      }
-      if (intent?.type === 'voiceWatchDemo'){
-        // именно тот ответ, который вы просили
-        state.flow = 'watch';
-        state.step = 'askGenre';
-        aeroSay('Какой жанр хочется посмотреть?', chipsGenre);
-        return;
-      }
-
-      if (!state.flow){
-        if (intent?.type === 'start'){
-          startFlow(intent.flow);
-          return;
-        }
-        if (intent?.type === 'internal'){
-          handleInternal(intent.value);
-          return;
-        }
-        errorPickFromList(chipsMainMenu);
-        return;
-      }
-
-      // flow-specific
-      if (state.flow === 'crew'){
-        // allow typed done always
-        if (intent?.type === 'internal'){
-          handleInternal(intent.value);
-          return;
-        }
-        errorPickFromList(state.step === 'crewDone' ? chipsCrewAfter : chipsCrew);
-        return;
-      }
-
-      if (state.flow === 'watch'){
-        // accept quick genre triggers by text
-        const n = normalize(text);
-        if (n.includes('комед')) return handleInternal('genre:comedy');
-        if (n.includes('детект') || n.includes('трил')) return handleInternal('genre:detective');
-        if (n.includes('драм')) return handleInternal('genre:drama');
-        if (n.includes('фантаст') || n.includes('фэнт')) return handleInternal('genre:scifi');
-        errorPickFromList(chipsGenre);
-        return;
-      }
-
-      errorPickFromList(chipsMainMenu);
+      const data = await r.json();
+      return (data && data.text) ? String(data.text).trim() : "";
     }
 
     // =========================
-    // UI: send
+    // Unified “utterance” handler:
+    // - runs scripts first
+    // - if not handled => AI fallback
+    // =========================
+    async function onUserUtterance(text, opts){
+      const { internalValue = null, alreadyRenderedUser = false } = opts || {};
+
+      const clean = (text || "").trim();
+      if (!clean) return;
+
+      if (!alreadyRenderedUser) userSay(clean);
+      pushConvo("user", clean);
+
+      // 1) chip/internal
+      if (internalValue){
+        const ok = handleInternal(internalValue);
+        if (ok) return;
+        // если почему-то внутреннее не обработалось — идём в AI
+      } else {
+        // 2) intent/scripts
+        const intent = detectIntent(clean);
+
+        if (intent?.type === 'hello'){
+          const reply = 'Привет, чем тебе помочь?';
+          aeroSay(reply, chipsMainMenu);
+          pushConvo("assistant", reply);
+          return;
+        }
+
+        if (intent?.type === 'start'){
+          const ok = startFlow(intent.flow);
+          if (ok) return;
+        }
+
+        if (intent?.type === 'internal'){
+          const ok = handleInternal(intent.value);
+          if (ok) return;
+        }
+
+        // 3) active flow fallback rules (если вы хотите строгий “список”, можно оставить)
+        if (state.flow === 'crew'){
+          errorPickFromList(state.step === 'crewDone' ? chipsCrewAfter : chipsCrew);
+          return;
+        }
+        if (state.flow === 'watch'){
+          errorPickFromList(chipsGenre);
+          return;
+        }
+      }
+
+      // 4) No script matched => AI fallback
+      aeroSay("Секунду…");
+      try{
+        const ai = await callAIFallback(clean);
+        if (ai){
+          aeroSay(ai, chipsMainMenu);
+          pushConvo("assistant", ai);
+        } else {
+          errorPickFromList(chipsMainMenu);
+        }
+      } catch(e){
+        errorPickFromList(chipsMainMenu);
+      }
+    }
+
+    // =========================
+    // Send / typed input
     // =========================
     function send(){
       const text = inputEl.value.trim();
       if (!text) return;
       inputEl.value = '';
-      handleUserInput(text, null);
+      onUserUtterance(text, { alreadyRenderedUser: false });
     }
     sendEl.addEventListener('click', send);
     inputEl.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') send(); });
 
     // =========================
-    // UI: plus sheet
+    // Plus sheet
     // =========================
     function openSheet(){ overlayEl.classList.add('open'); overlayEl.setAttribute('aria-hidden','false'); }
     function closeSheet(){ overlayEl.classList.remove('open'); overlayEl.setAttribute('aria-hidden','true'); }
@@ -875,7 +943,7 @@
     });
 
     // =========================
-    // UI: drawer
+    // Drawer
     // =========================
     function openDrawer(){ drawerOverlayEl.classList.add('open'); drawerOverlayEl.setAttribute('aria-hidden','false'); }
     function closeDrawer(){ drawerOverlayEl.classList.remove('open'); drawerOverlayEl.setAttribute('aria-hidden','true'); }
@@ -883,75 +951,39 @@
     drawerCloseEl.addEventListener('click', closeDrawer);
     drawerOverlayEl.addEventListener('click', (e)=>{ if (e.target === drawerOverlayEl) closeDrawer(); });
 
-    // Buttons
     crewBtnFixedEl.addEventListener('click', ()=> startFlow('crew'));
 
     // =========================
-    // VOICE: continuous SpeechRecognition session (start once, keep listening until stop)
-    // Demo rules:
-    //  - Say “Привет” -> bot: “Привет, чем тебе помочь?”
-    //  - Say “Хочу посмотреть фильм” -> bot: “Какой жанр хочется посмотреть?”
+    // Voice: continuous SpeechRecognition session
+    // - scripts first; if none => AI fallback
     // =========================
-    const Voice = {
-      supported: false,
-      active: false,
-      rec: null
-    };
+    const Voice = { supported:false, active:false, rec:null };
 
     function setupVoice(){
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) return;
-
       Voice.supported = true;
+
       const rec = new SR();
       rec.lang = 'ru-RU';
       rec.continuous = true;
-      rec.interimResults = false; // только финальные фразы
+      rec.interimResults = false;
       rec.maxAlternatives = 1;
       Voice.rec = rec;
 
-      rec.onresult = (event) => {
-        // берём последний финальный результат
+      rec.onresult = async (event) => {
         const last = event.results[event.results.length - 1];
-        if (!last || !last[0]) return;
-        const transcript = (last[0].transcript || '').trim();
+        const transcript = (last && last[0] && last[0].transcript) ? last[0].transcript.trim() : "";
         if (!transcript) return;
 
-        // Пишем как будто пользователь отправил сообщение голосом
-        userSay(transcript);
-
-        // Демонстрационная логика (непрерывная сессия)
-        const n = normalize(transcript);
-
-        if (n.includes('привет') || n.includes('здрав')){
-          aeroSay('Привет, чем тебе помочь?', chipsMainMenu);
-          return;
-        }
-
-        if (n.includes('хочу посмотреть фильм') || n.includes('хочу посмотреть') || (n.includes('посмотреть') && n.includes('фильм'))){
-          state.flow = 'watch';
-          state.step = 'askGenre';
-          aeroSay('Какой жанр хочется посмотреть?', chipsGenre);
-          return;
-        }
-
-        // иначе — отдаём в общий обработчик (без дубля userSay!)
-        // Здесь важно НЕ вызывать handleUserInput(), иначе будет двойное userSay.
-        // Поэтому: пробуем intent и отвечаем мягко.
-        const intent = detectIntent(transcript);
-        if (intent?.type === 'internal') { handleInternal(intent.value); return; }
-        if (intent?.type === 'start') { startFlow(intent.flow); return; }
-
-        errorPickFromList(chipsMainMenu);
+        // важное: user уже будет отрисован внутри onUserUtterance, поэтому передаём alreadyRenderedUser=false
+        await onUserUtterance(transcript, { alreadyRenderedUser: false });
       };
 
-      rec.onerror = () => {
-        // Не спамим сообщениями; просто выключаем UI
-        stopVoice();
-      };
+      rec.onerror = () => { stopVoice(); };
 
       rec.onend = () => {
-        // Если пользователь не нажимал "Прекратить", пытаемся держать сессию живой
+        // держим сессию живой, пока активна
         if (Voice.active){
           try { rec.start(); } catch(e) {}
         }
@@ -960,17 +992,14 @@
 
     function startVoice(){
       if (!Voice.supported){
-        aeroSay('Распознавание голоса недоступно в этом браузере. Используйте текст.');
+        aeroSay('Распознавание голоса недоступно в этом браузере. Используйте текст.', chipsMainMenu);
         return;
       }
       Voice.active = true;
       voiceBtnEl.classList.add('voice-on');
       voiceBtnEl.textContent = 'Прекратить';
       try { Voice.rec.start(); } catch(e) {}
-      aeroSay('Голосовой режим включён. Говорите фразы — я буду отвечать.', [
-        {label:'Что я умею', value:'start:watch'},
-        {label:'Связь с бортпроводником', value:'start:crew'}
-      ]);
+      aeroSay('Голосовой режим включён. Говорите — я отвечу. (Остановить: “Прекратить”)', chipsMainMenu);
     }
 
     function stopVoice(){
@@ -982,20 +1011,19 @@
       }
     }
 
-    voiceBtnEl.addEventListener('click', () => {
-      if (!Voice.active) startVoice();
-      else stopVoice();
-    });
+    voiceBtnEl.addEventListener('click', ()=>{ if (!Voice.active) startVoice(); else stopVoice(); });
 
-    // init
+    // =========================
+    // Init
+    // =========================
     window.addEventListener('load', ()=>{
       inputEl.focus();
-      messagesEl.scrollTop = messagesEl.scrollHeight;
       setupVoice();
     });
   </script>
 </body>
 </html>
+
 
 
 
