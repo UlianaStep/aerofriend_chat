@@ -52,28 +52,25 @@
     .app{ height:100%; display:flex; flex-direction:column; }
 
     header{
+      width:100%;
       height: calc(var(--header-h) + var(--safe-top));
       padding: calc(14px + var(--safe-top)) 18px 12px;
-      width: 100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
       border-bottom: 1px solid rgba(255,255,255,.10);
       background: linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,0));
       backdrop-filter: blur(6px);
       position:relative;
       z-index:2;
+      display:block;
     }
-
-    .wrap{
-  width: 100%;
-  margin: 0 auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-}
-
+    header .wrap{
+      width:100%;
+      max-width: 920px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
 
     .icon-btn{
       width:46px;height:46px;
@@ -87,9 +84,15 @@
       padding:0;
     }
     .icon-btn img{ width:22px;height:22px; object-fit:contain; display:block; }
+    .brand{ display:flex; align-items:center; }
     .brand img{ height:22px; width:auto; display:block; }
 
-    .titlebar{ padding: 10px 20px 6px; }
+    .titlebar{
+      width:100%;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 10px 20px 6px;
+    }
     .titlebar h1{
       margin:0;
       font-size: 40px;
@@ -99,6 +102,9 @@
     }
 
     .chat{
+      width:100%;
+      max-width: 920px;
+      margin: 0 auto;
       flex:1;
       display:flex;
       flex-direction:column;
@@ -177,6 +183,85 @@
       user-select:none;
     }
     .chip:active{ transform: translateY(1px); }
+
+    /* ===== movie cards inside bot bubble ===== */
+    .movieBlockTitle{
+      font-weight: 900;
+      font-size: 16px;
+      margin: 0 0 10px;
+      letter-spacing:.2px;
+    }
+    .movieCards{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .movieCard{
+      display:flex;
+      gap:12px;
+      padding: 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      box-shadow: 0 12px 22px rgba(0,0,0,.12);
+    }
+    .moviePoster{
+      width:56px;
+      height:78px;
+      border-radius: 10px;
+      overflow:hidden;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+    }
+    .moviePoster img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .movieMeta{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .movieName{
+      font-weight: 900;
+      font-size: 15px;
+      line-height: 1.15;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .movieLine{
+      font-size: 13px;
+      color: rgba(255,255,255,.80);
+      line-height: 1.2;
+      margin:0;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .movieDesc{
+      font-size: 13px;
+      color: rgba(255,255,255,.74);
+      line-height: 1.25;
+      margin: 2px 0 0;
+      display:-webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+    .tagRow{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top: 4px;
+    }
+    .tag{
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.86);
+    }
 
     /* ===== Action buttons row ABOVE input ===== */
     .actionRow{
@@ -291,6 +376,8 @@
       transform: translateY(10px);
       opacity:0;
       transition: transform .18s ease, opacity .18s ease;
+      max-width: 920px;
+      margin: 0 auto;
     }
     .overlay.open .sheet{ transform: translateY(0); opacity:1; }
 
@@ -439,40 +526,27 @@
     }
 
     @media (min-width: 820px) and (orientation: landscape){
-  .app{ align-items:stretch; } /* важно: не центруем весь app */
-
-  header{ width: 100%; }       /* шапка на всю ширину */
-  .titlebar, .chat{ width: 100%; } /* блоки на всю ширину */
-
-  /* контент внутри ограничим контейнером (см. пункт 2) */
-  .bubble{ max-width: 62%; }
-  .titlebar h1{ font-size: 44px; }
-
-  /* всплывашка пусть остаётся в безопасных отступах */
-  .sheet{
-    left: 16px;
-    right: 16px;
-    max-width: 920px;
-    margin: 0 auto;
-  }
-}
-
+      .bubble{ max-width: 62%; }
+      .titlebar h1{ font-size: 44px; }
+      .sheet{ left: 16px; right: 16px; }
+    }
   </style>
 </head>
 
 <body>
   <div class="app">
-    <div class="wrap">
     <header>
-      <button id="burger" class="icon-btn" type="button" aria-label="Меню">
-        <img src="Icon/Burger-menu.svg" alt="" />
-      </button>
+      <div class="wrap">
+        <button id="burger" class="icon-btn" type="button" aria-label="Меню">
+          <img src="Icon/Burger-menu.svg" alt="" />
+        </button>
 
-      <div class="brand" aria-label="Aeroflot">
-        <img src="Logo/CMYK.svg" alt="AEROFLOT" />
+        <div class="brand" aria-label="Aeroflot">
+          <img src="Logo/CMYK.svg" alt="AEROFLOT" />
+        </div>
       </div>
     </header>
-    </div>
+
     <div class="titlebar">
       <h1 id="titleH1">Аэродруг</h1>
     </div>
@@ -550,7 +624,7 @@
   <div id="drawerOverlay" class="drawerOverlay" aria-hidden="true">
     <aside class="drawer" role="dialog" aria-label="Навигация">
       <div class="drawerTop">
-        <div class="drawerTitle" id="drawerTitle">Навигация</div>
+        <div class="drawerTitle" id="drawerTitle"></div>
         <button id="drawerClose" class="drawerClose" type="button" aria-label="Закрыть">×</button>
       </div>
 
@@ -572,7 +646,7 @@
       </nav>
 
       <div class="drawerFooter">
-        <div style="font-weight:900; letter-spacing:.2px;" id="langTitle">Язык</div>
+        <div style="font-weight:900; letter-spacing:.2px;" id="langTitle"></div>
         <div class="langRow">
           <button class="langBtn active" data-lang="ru" type="button">Русский</button>
           <button class="langBtn" data-lang="en" type="button">English</button>
@@ -645,7 +719,8 @@
         genre: { comedy: "Комедия", detective: "Детектив/триллер", drama: "Драма", scifi: "Фантастика" },
         watchAskFormat: "Формат: сериал или фильм?",
         format: { series: "Сериал", film: "Фильм" },
-        watchResultTitle: "Подборка",
+
+        watchCardsTitle: (durLabel)=>`Подборка (${durLabel})`,
 
         crewAsk: "Что передать бортпроводнику?",
         crew: {
@@ -675,7 +750,14 @@
         airSpeed: "Крейсерская скорость обычно 800–900 км/ч. Ветер влияет на скорость “по земле”.",
         airTurb: "Если трясёт — ремень пристёгнут. Экипаж может сменить эшелон и обойти зоны.",
 
-        voiceOn: "Голосовой режим включён. Говорите — я отвечу."
+        voiceOn: "Голосовой режим включён. Говорите — я отвечу.",
+
+        meta: {
+          year: "Год",
+          runtime: "Время",
+          eps: "Эпизоды",
+          tags: "Теги"
+        }
       },
 
       en: {
@@ -725,7 +807,8 @@
         genre: { comedy: "Comedy", detective: "Mystery/Thriller", drama: "Drama", scifi: "Sci-fi" },
         watchAskFormat: "Format: series or movie?",
         format: { series: "Series", film: "Movie" },
-        watchResultTitle: "Suggestions",
+
+        watchCardsTitle: (durLabel)=>`Picks (${durLabel})`,
 
         crewAsk: "What should I tell the crew?",
         crew: {
@@ -755,7 +838,14 @@
         airSpeed: "Typical cruise speed is about 800–900 km/h. Wind affects ground speed.",
         airTurb: "If it gets bumpy, keep your seat belt fastened. Crew may change altitude to avoid it.",
 
-        voiceOn: "Voice mode is on. Speak — I’ll respond."
+        voiceOn: "Voice mode is on. Speak — I’ll respond.",
+
+        meta: {
+          year: "Year",
+          runtime: "Time",
+          eps: "Episodes",
+          tags: "Tags"
+        }
       },
 
       tr: {
@@ -805,7 +895,8 @@
         genre: { comedy: "Komedi", detective: "Gizem/Thriller", drama: "Dram", scifi: "Bilim kurgu" },
         watchAskFormat: "Dizi mi film mi?",
         format: { series: "Dizi", film: "Film" },
-        watchResultTitle: "Öneriler",
+
+        watchCardsTitle: (durLabel)=>`Öneriler (${durLabel})`,
 
         crewAsk: "Kabin ekibine ne ileteyim?",
         crew: {
@@ -835,7 +926,14 @@
         airSpeed: "Seyir hızı genelde 800–900 km/s. Rüzgâr yer hızını etkiler.",
         airTurb: "Sarsıntıda kemeri takılı tutun. Ekip irtifa değiştirerek kaçınabilir.",
 
-        voiceOn: "Ses modu açık. Konuşun — yanıtlayacağım."
+        voiceOn: "Ses modu açık. Konuşun — yanıtlayacağım.",
+
+        meta: {
+          year: "Yıl",
+          runtime: "Süre",
+          eps: "Bölümler",
+          tags: "Etiketler"
+        }
       }
     };
 
@@ -885,7 +983,7 @@
     function normalize(s){ return (s||'').toLowerCase().replace(/ё/g,'е').trim(); }
     function hideEmptyHint(){ if (emptyHintEl) emptyHintEl.style.display = 'none'; }
 
-    function addMessage({from, text, chips}){
+    function addMessage({from, text, node, chips}){
       hideEmptyHint();
 
       const msg = document.createElement('div');
@@ -897,7 +995,12 @@
 
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
-      bubble.textContent = text;
+
+      if (node){
+        bubble.appendChild(node);
+      } else {
+        bubble.textContent = text;
+      }
 
       msg.appendChild(label);
       msg.appendChild(bubble);
@@ -922,6 +1025,7 @@
     }
 
     function aeroSay(text, chips){ addMessage({from:'bot', text, chips}); }
+    function aeroNode(node, chips){ addMessage({from:'bot', node, chips}); }
     function userSay(text){ addMessage({from:'user', text}); }
 
     // =========================
@@ -984,24 +1088,325 @@
     }
 
     // =========================
-    // Watch library (same list across langs)
+    // Movie catalog (posters from Wikimedia)
     // =========================
-    const watchLibrary = {
+    const MOVIES = {
+      // FILMS
+      grandBudapest: {
+        type:"film",
+        title:{ru:"Отель «Гранд Будапешт»", en:"The Grand Budapest Hotel", tr:"The Grand Budapest Hotel"},
+        year:2014, runtime:"1ч 39м",
+        desc:{
+          ru:"Ироничная авантюра про легендарного консьержа и историю одного отеля.",
+          en:"A witty caper around a legendary concierge and a famous hotel.",
+          tr:"Efsane bir konsiyerj ve ünlü bir otel etrafında esprili bir macera."
+        },
+        tags:["comedy","adventure"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/a/a6/The_Grand_Budapest_Hotel_Poster.jpg"
+      },
+      palmSprings: {
+        type:"film",
+        title:{ru:"Палм-Спрингс", en:"Palm Springs", tr:"Palm Springs"},
+        year:2020, runtime:"1ч 30м",
+        desc:{
+          ru:"Лёгкая фантастическая комедия про день, который повторяется.",
+          en:"A light sci-fi comedy about a day that keeps repeating.",
+          tr:"Sürekli tekrar eden bir gün hakkında hafif bir bilim kurgu komedisi."
+        },
+        tags:["comedy","scifi"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/2/25/Palm_Springs_%282020_film%29.png"
+      },
+      paddington: {
+        type:"film",
+        title:{ru:"Паддингтон", en:"Paddington", tr:"Paddington"},
+        year:2014, runtime:"1ч 36м",
+        desc:{
+          ru:"Добрая семейная история, отлично разгружает голову в полёте.",
+          en:"Warm family story — perfect for an easy flight watch.",
+          tr:"Sıcak bir aile hikâyesi — uçuş için ideal."
+        },
+        tags:["comedy","family"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/7/7e/Paddington_poster.jpg"
+      },
+
+      knivesOut: {
+        type:"film",
+        title:{ru:"Достать ножи", en:"Knives Out", tr:"Knives Out"},
+        year:2019, runtime:"2ч 10м",
+        desc:{
+          ru:"Стильный детектив с неожиданными поворотами и отличным темпом.",
+          en:"A stylish mystery with sharp twists and great pacing.",
+          tr:"Keskin ters köşelerle şık bir gizem."
+        },
+        tags:["detective","thriller"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/1/1f/Knives_Out_poster.jpeg"
+      },
+      sherlockHolmes2009: {
+        type:"film",
+        title:{ru:"Шерлок Холмс", en:"Sherlock Holmes", tr:"Sherlock Holmes"},
+        year:2009, runtime:"2ч 08м",
+        desc:{
+          ru:"Энергичный детектив-боевик: расследование и харизма дуэта.",
+          en:"High-energy detective action with a charismatic duo.",
+          tr:"Karizmatik ikiliyle tempolu dedektif aksiyonu."
+        },
+        tags:["detective","action"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/6/6e/Sherlock_holmes_ver5.jpg"
+      },
+      goneGirl: {
+        type:"film",
+        title:{ru:"Исчезнувшая", en:"Gone Girl", tr:"Gone Girl"},
+        year:2014, runtime:"2ч 29м",
+        desc:{
+          ru:"Психологический триллер: интрига, медиа и двойные смыслы.",
+          en:"A psychological thriller about media, intrigue, and masks.",
+          tr:"Medya ve entrika üzerine psikolojik thriller."
+        },
+        tags:["thriller","drama"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/0/05/Gone_Girl_Poster.jpg"
+      },
+
+      whiplash: {
+        type:"film",
+        title:{ru:"Одержимость", en:"Whiplash", tr:"Whiplash"},
+        year:2014, runtime:"1ч 47м",
+        desc:{
+          ru:"Драма про амбиции и цену мастерства. Очень бодрит.",
+          en:"A drama about ambition and the cost of mastery.",
+          tr:"Hırs ve ustalığın bedeli üzerine bir dram."
+        },
+        tags:["drama","music"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg"
+      },
+      trumanShow: {
+        type:"film",
+        title:{ru:"Шоу Трумана", en:"The Truman Show", tr:"The Truman Show"},
+        year:1998, runtime:"1ч 43м",
+        desc:{
+          ru:"Умная история о мире “как будто”, где всё не то, чем кажется.",
+          en:"A smart story about a world where nothing is what it seems.",
+          tr:"Hiçbir şeyin göründüğü gibi olmadığı akıllı bir hikâye."
+        },
+        tags:["drama","comedy"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/c/cd/The_Truman_Show_poster.jpg"
+      },
+      littleMissSunshine: {
+        type:"film",
+        title:{ru:"Маленькая мисс Счастье", en:"Little Miss Sunshine", tr:"Little Miss Sunshine"},
+        year:2006, runtime:"1ч 41м",
+        desc:{
+          ru:"Теплая драмеди о семье и дороге — мягко и человечно.",
+          en:"A warm road dramedy about family and being human.",
+          tr:"Aile ve yol üzerine sıcak bir dram-komedi."
+        },
+        tags:["drama","comedy"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/3/3f/Little_Miss_Sunshine_poster.png"
+      },
+
+      sourceCode: {
+        type:"film",
+        title:{ru:"Исходный код", en:"Source Code", tr:"Source Code"},
+        year:2011, runtime:"1ч 33м",
+        desc:{
+          ru:"Фантастический триллер с динамикой и ясной развязкой.",
+          en:"A tight sci-fi thriller with a clear, punchy payoff.",
+          tr:"Net finali olan tempolu bilim kurgu thriller."
+        },
+        tags:["scifi","thriller"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/8/85/Source_Code_Poster.jpg"
+      },
+      edgeOfTomorrow: {
+        type:"film",
+        title:{ru:"Грань будущего", en:"Edge of Tomorrow", tr:"Edge of Tomorrow"},
+        year:2014, runtime:"1ч 53м",
+        desc:{
+          ru:"Экшен и фантастика: повтор дня, прокачка навыков и бой.",
+          en:"Sci-fi action: looping day, leveling up, and big battles.",
+          tr:"Tekrarlanan gün, gelişim ve aksiyon dolu bilim kurgu."
+        },
+        tags:["scifi","action"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/f/f9/Edge_of_Tomorrow_Poster.jpg"
+      },
+      her: {
+        type:"film",
+        title:{ru:"Она", en:"Her", tr:"Her"},
+        year:2013, runtime:"2ч 06м",
+        desc:{
+          ru:"Спокойная фантастика о близости и технологиях — очень атмосферно.",
+          en:"A calm, atmospheric sci-fi about intimacy and technology.",
+          tr:"Yakınlık ve teknoloji üzerine sakin, atmosferik bilim kurgu."
+        },
+        tags:["scifi","drama"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/4/44/Her_poster.jpg"
+      },
+
+      // SERIES
+      theOffice: {
+        type:"series",
+        title:{ru:"Офис", en:"The Office", tr:"The Office"},
+        year:2005, eps:"2–3",
+        desc:{
+          ru:"Сухой юмор и короткие серии — идеально на борту.",
+          en:"Dry humor + short episodes — perfect on a flight.",
+          tr:"Kuru mizah ve kısa bölümler — uçuş için ideal."
+        },
+        tags:["comedy"],
+        poster:"https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/18786d1d-e37f-4b05-8757-144660a44846/180"
+      },
+      modernFamily: {
+        type:"series",
+        title:{ru:"Американская семейка", en:"Modern Family", tr:"Modern Family"},
+        year:2009, eps:"3–4",
+        desc:{
+          ru:"Лёгкая семейная комедия. Смотрится без усилий.",
+          en:"Easy family comedy — effortless watching.",
+          tr:"Kolay aile komedisi — rahat izlenir."
+        },
+        tags:["comedy","family"],
+        poster:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPb7fjf6BMzow98Z5CqglprtwZREH6epKf-A&s"
+      },
+      b99: {
+        type:"series",
+        title:{ru:"Бруклин 9-9", en:"Brooklyn Nine-Nine", tr:"Brooklyn Nine-Nine"},
+        year:2013, eps:"3–4",
+        desc:{
+          ru:"Быстрый юмор, харизматичная команда и короткие серии.",
+          en:"Fast jokes, great cast, short episodes.",
+          tr:"Hızlı şakalar, iyi ekip, kısa bölümler."
+        },
+        tags:["comedy"],
+        poster:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa3wsVN1N3hnZTLmHcIkRvqijskhipaVBXnw&sg"
+      },
+
+      sherlockSeries: {
+        type:"series",
+        title:{ru:"Шерлок", en:"Sherlock", tr:"Sherlock"},
+        year:2010, eps:"1",
+        desc:{
+          ru:"Современная адаптация: одна серия — как полноценный фильм.",
+          en:"Modern adaptation — one episode feels like a full movie.",
+          tr:"Modern uyarlama — bir bölüm tam film gibi."
+        },
+        tags:["detective","thriller"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/b/b9/Sherlock_titlecard.jpg"
+      },
+      onlyMurders: {
+        type:"series",
+        title:{ru:"Убийства в одном здании", en:"Only Murders in the Building", tr:"Only Murders in the Building"},
+        year:2021, eps:"2–3",
+        desc:{
+          ru:"Детектив с лёгким юмором и очень комфортным ритмом.",
+          en:"A cozy mystery with light humor and great pacing.",
+          tr:"Hafif mizahlı, keyifli bir gizem."
+        },
+        tags:["detective","comedy"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/2/26/Only_Murders_in_the_Building.jpeg"
+      },
+      broadchurch: {
+        type:"series",
+        title:{ru:"Бродчерч", en:"Broadchurch", tr:"Broadchurch"},
+        year:2013, eps:"2",
+        desc:{
+          ru:"Атмосферный детектив: напряжение и отличный актёрский состав.",
+          en:"Atmospheric mystery with strong tension and cast.",
+          tr:"Gergin ve atmosferik bir polisiye."
+        },
+        tags:["detective","drama"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/7/7c/Broadchurch_Series_1.jpeg"
+      },
+
+      theBear: {
+        type:"series",
+        title:{ru:"Медведь", en:"The Bear", tr:"The Bear"},
+        year:2022, eps:"2–3",
+        desc:{
+          ru:"Быстрый темп, эмоции и кухня — очень цепляет.",
+          en:"Fast-paced, emotional, kitchen chaos — very engaging.",
+          tr:"Hızlı tempo, duygular ve mutfak kaosu — sürükleyici."
+        },
+        tags:["drama"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/3/37/The_Bear_TV_series.jpg"
+      },
+      fleabag: {
+        type:"series",
+        title:{ru:"Дрянь", en:"Fleabag", tr:"Fleabag"},
+        year:2016, eps:"3–4",
+        desc:{
+          ru:"Коротко, остроумно и честно. Серии идут на одном дыхании.",
+          en:"Short, sharp, honest — episodes fly by.",
+          tr:"Kısa, zeki ve dürüst — bölümler akıp gider."
+        },
+        tags:["drama","comedy"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/5/5d/Fleabag_series_1.jpg"
+      },
+      queensGambit: {
+        type:"series",
+        title:{ru:"Ход королевы", en:"The Queen's Gambit", tr:"The Queen's Gambit"},
+        year:2020, eps:"1",
+        desc:{
+          ru:"Очень стильная драма: шахматы, взросление и характер.",
+          en:"Stylish drama: chess, growth, and character.",
+          tr:"Şık bir dram: satranç, gelişim ve karakter."
+        },
+        tags:["drama"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/2/2d/The_Queen%27s_Gambit_poster.jpg"
+      },
+
+      blackMirror: {
+        type:"series",
+        title:{ru:"Чёрное зеркало", en:"Black Mirror", tr:"Black Mirror"},
+        year:2011, eps:"1",
+        desc:{
+          ru:"Антология: можно выбрать одну сильную серию под настроение.",
+          en:"Anthology — pick one powerful episode to match your mood.",
+          tr:"Antoloji — ruh hâline göre tek bölüm seçebilirsin."
+        },
+        tags:["scifi","thriller"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/2/2f/Black_Mirror_intertitle.png"
+      },
+      ldr: {
+        type:"series",
+        title:{ru:"Любовь, смерть и роботы", en:"Love, Death & Robots", tr:"Love, Death & Robots"},
+        year:2019, eps:"3–5",
+        desc:{
+          ru:"Короткие анимационные истории — удобно смотреть отрезками.",
+          en:"Short animated stories — great in small chunks.",
+          tr:"Kısa animasyon hikâyeleri — parça parça izlemek için iyi."
+        },
+        tags:["scifi","animation"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/8/8b/Love%2C_Death_%26_Robots.png"
+      },
+      strangerThings: {
+        type:"series",
+        title:{ru:"Очень странные дела", en:"Stranger Things", tr:"Stranger Things"},
+        year:2016, eps:"1–2",
+        desc:{
+          ru:"Приключение и фантастика: атмосфера 80-х и отличный сюжет.",
+          en:"Adventure sci-fi with an 80s vibe and strong story.",
+          tr:"80'ler havasında macera ve bilim kurgu."
+        },
+        tags:["scifi","adventure"],
+        poster:"https://upload.wikimedia.org/wikipedia/en/f/f7/Stranger_Things_season_1.jpg"
+      }
+    };
+
+    // подборки по жанру/формату
+    const WATCH_PICK_KEYS = {
       comedy: {
-        film: ['The Grand Budapest Hotel','Palm Springs','Paddington'],
-        series: ['The Office (2–3 eps)','Modern Family (3–4 eps)','Brooklyn Nine-Nine (3–4 eps)']
+        film: ["grandBudapest","palmSprings","paddington"],
+        series: ["theOffice","modernFamily","b99"]
       },
       detective: {
-        film: ['Knives Out','Sherlock Holmes (2009)','Gone Girl'],
-        series: ['Sherlock (1 ep)','Only Murders in the Building (2–3 eps)','Broadchurch (2 eps)']
+        film: ["knivesOut","sherlockHolmes2009","goneGirl"],
+        series: ["sherlockSeries","onlyMurders","broadchurch"]
       },
       drama: {
-        film: ['Whiplash','The Truman Show','Little Miss Sunshine'],
-        series: ['The Bear (2–3 eps)','Fleabag (3–4 eps)','The Queen’s Gambit (1 ep)']
+        film: ["whiplash","trumanShow","littleMissSunshine"],
+        series: ["theBear","fleabag","queensGambit"]
       },
       scifi: {
-        film: ['Source Code','Edge of Tomorrow','Her'],
-        series: ['Black Mirror (1 ep)','Love, Death & Robots','Stranger Things (1–2 eps)']
+        film: ["sourceCode","edgeOfTomorrow","her"],
+        series: ["blackMirror","ldr","strangerThings"]
       }
     };
 
@@ -1011,15 +1416,80 @@
       return map[durKey] || '';
     }
 
-    function buildWatchPicks(genreKey, formatKey, durKey){
-      const lib = watchLibrary[genreKey] || watchLibrary.comedy;
-      const arr = lib[formatKey] || lib.film;
-      const head = `${t().watchResultTitle} (${durationLabel(durKey)}):`;
-      return `${head}\n• ${arr.join('\n• ')}`;
+    function getMovieTitle(m){
+      return m.title[LANG] || m.title.en || m.title.ru || "";
+    }
+
+    function renderWatchCards(genreKey, formatKey, durKey){
+      const keys = (WATCH_PICK_KEYS[genreKey] && WATCH_PICK_KEYS[genreKey][formatKey]) ? WATCH_PICK_KEYS[genreKey][formatKey] : [];
+      const items = keys.map(k => MOVIES[k]).filter(Boolean);
+
+      const wrap = document.createElement("div");
+
+      const h = document.createElement("div");
+      h.className = "movieBlockTitle";
+      h.textContent = t().watchCardsTitle(durationLabel(durKey));
+      wrap.appendChild(h);
+
+      const list = document.createElement("div");
+      list.className = "movieCards";
+
+      for (const m of items){
+        const card = document.createElement("div");
+        card.className = "movieCard";
+
+        const poster = document.createElement("div");
+        poster.className = "moviePoster";
+        const img = document.createElement("img");
+        img.src = m.poster;
+        img.alt = getMovieTitle(m);
+        img.loading = "lazy";
+        poster.appendChild(img);
+
+        const meta = document.createElement("div");
+        meta.className = "movieMeta";
+
+        const name = document.createElement("div");
+        name.className = "movieName";
+        name.textContent = getMovieTitle(m);
+
+        const line = document.createElement("div");
+        line.className = "movieLine";
+        if (m.type === "film"){
+          line.textContent = `${t().meta.year}: ${m.year} · ${t().meta.runtime}: ${m.runtime}`;
+        } else {
+          line.textContent = `${t().meta.year}: ${m.year} · ${t().meta.eps}: ${m.eps}`;
+        }
+
+        const desc = document.createElement("div");
+        desc.className = "movieDesc";
+        desc.textContent = (m.desc[LANG] || m.desc.en || m.desc.ru || "");
+
+        const tags = document.createElement("div");
+        tags.className = "tagRow";
+        for (const tg of (m.tags || []).slice(0,3)){
+          const span = document.createElement("span");
+          span.className = "tag";
+          span.textContent = tg;
+          tags.appendChild(span);
+        }
+
+        meta.appendChild(name);
+        meta.appendChild(line);
+        meta.appendChild(desc);
+        meta.appendChild(tags);
+
+        card.appendChild(poster);
+        card.appendChild(meta);
+        list.appendChild(card);
+      }
+
+      wrap.appendChild(list);
+      return wrap;
     }
 
     // =========================
-    // Route Moscow -> Kazan (demo list + sequential "where are we")
+    // Route Moscow -> Kazan
     // =========================
     const route = [
       { overRU:"Москвой", overEN:"Moscow", overTR:"Moskova", infoRU:"Москва — крупнейший город России, культурный и деловой центр.", infoEN:"Moscow is Russia’s largest city and a major cultural and business hub.", infoTR:"Moskova Rusya’nın en büyük şehri; kültür ve iş merkezi." },
@@ -1130,7 +1600,7 @@
         return true;
       }
 
-      // watch (fixed: end with picks, no extra step)
+      // watch (cards)
       if (value.startsWith('dur:')){
         if (state.flow !== 'watch' || state.step !== 'dur') return false;
         state.watch.dur = value.split(':')[1];
@@ -1148,7 +1618,11 @@
       if (value.startsWith('format:')){
         if (state.flow !== 'watch' || state.step !== 'format') return false;
         state.watch.format = value.split(':')[1];
-        aeroSay(buildWatchPicks(state.watch.genre, state.watch.format, state.watch.dur), chipsMainMenu());
+
+        // вместо текста — карточки
+        const cardsNode = renderWatchCards(state.watch.genre, state.watch.format, state.watch.dur);
+        aeroNode(cardsNode, chipsMainMenu());
+
         resetFlow();
         return true;
       }
@@ -1218,7 +1692,7 @@
       if (n.includes('драм') || n.includes('drama') || n.includes('dram')) return {type:'internal', value:'genre:drama'};
       if (n.includes('фантаст') || n.includes('sci') || n.includes('bilim')) return {type:'internal', value:'genre:scifi'};
 
-      if (n === 'фильм' || n.includes('movie') || n.includes('film ' ) || n === 'film') return {type:'internal', value:'format:film'};
+      if (n === 'фильм' || n.includes('movie') || n.includes(' film') || n === 'film') return {type:'internal', value:'format:film'};
       if (n === 'сериал' || n.includes('series') || n.includes('dizi')) return {type:'internal', value:'format:series'};
 
       if (n.includes('до 1') || n.includes('1 hour') || n.includes('1 saate')) return {type:'internal', value:'dur:short'};
@@ -1230,7 +1704,7 @@
     }
 
     // =========================
-    // Main handler (NO online AI now)
+    // Main handler (no online AI yet)
     // =========================
     async function onUserUtterance(text, opts){
       const { internalValue = null, alreadyRenderedUser = false } = opts || {};
@@ -1265,7 +1739,7 @@
         return;
       }
 
-      // If inside strict flows, force choices
+      // strict flows
       if (state.flow === 'watch'){
         errorPickFromList(
           state.step === 'dur' ? chipsDuration() :
@@ -1374,19 +1848,16 @@
 
     function startVoice(){
       if (!Voice.supported){
-        aeroSay(t().errPick, chipsMainMenu());
+        errorPickFromList(chipsMainMenu());
         return;
       }
       Voice.active = true;
       voiceBtnEl.classList.add('voice-on');
       voiceBtnEl.textContent = t().voiceStop;
 
-      // обновим язык распознавания на текущий
-      try {
-        if (Voice.rec) Voice.rec.lang = (LANG === "ru") ? 'ru-RU' : (LANG === "tr" ? 'tr-TR' : 'en-US');
-      } catch(e) {}
-
+      try { if (Voice.rec) Voice.rec.lang = (LANG === "ru") ? 'ru-RU' : (LANG === "tr" ? 'tr-TR' : 'en-US'); } catch(e) {}
       try { Voice.rec.start(); } catch(e) {}
+
       aeroSay(t().voiceOn, chipsMainMenu());
     }
 
@@ -1433,10 +1904,7 @@
       ui.sheetAirTitle.textContent = t().sheetAirTitle;
       ui.sheetAirDesc.textContent = t().sheetAirDesc;
 
-      // keep voice lang in sync
-      try {
-        if (Voice.rec) Voice.rec.lang = (LANG === "ru") ? 'ru-RU' : (LANG === "tr" ? 'tr-TR' : 'en-US');
-      } catch(e) {}
+      try { if (Voice.rec) Voice.rec.lang = (LANG === "ru") ? 'ru-RU' : (LANG === "tr" ? 'tr-TR' : 'en-US'); } catch(e) {}
     }
 
     document.querySelectorAll(".langBtn").forEach(btn => {
@@ -1457,6 +1925,7 @@
   </script>
 </body>
 </html>
+
 
 
 
